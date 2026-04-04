@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCC AEO Blog Pipeline — Setup Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/quick" rel="stylesheet">
+
+<style>
+:root {
+  --blue:    #889CA2;
+  --coral:   #F49C8E;
+  --yellow:  #F3B548;
+  --sage:    #BFD9CC;
+  --blush:   #F6D5CD;
+  --mist:    #B3DCDA;
+  --bg:      #F2F2F2;
+  --surface: #FFFFFF;
+  --body:    #555555;
+  --blue-dark: #6B8188;
+  --check-green: #5AA97A;
+  --warn-bg: #FFF8E6;
+  --warn-border: #F3B548;
+  --code-bg: #1E2A2D;
+  --code-text: #B3DCDA;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Nunito', sans-serif;
+  color: var(--body);
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--surface);
+  border-bottom: 3px solid var(--sage);
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: var(--blue);
+  line-height: 1;
+}
+.header-left p {
+  font-family: 'Quick', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--coral);
+  margin-top: 4px;
+}
+
+.overall-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-label {
+  font-family: 'Quick', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--coral);
+  white-space: nowrap;
+}
+
+.progress-bar-wrap {
+  width: 200px;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--sage);
+  border-radius: 50px;
+  transition: width 0.4s ease;
+}
+
+.progress-count {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.reset-btn {
+  font-family: 'Quick', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #aaa;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reset-btn:hover { color: var(--coral); border-color: var(--coral); }
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 85px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid #E8EDEE;
+  padding: 32px 0;
+  position: sticky;
+  top: 85px;
+  height: calc(100vh - 85px);
+  overflow-y: auto;
+}
+
+.sidebar-section-label {
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--coral);
+  padding: 0 24px;
+  margin-bottom: 8px;
+  margin-top: 24px;
+}
+.sidebar-section-label:first-child { margin-top: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.nav-item:hover { background: var(--bg); }
+.nav-item.active { background: #EEF4F5; border-left-color: var(--blue); }
+
+.nav-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid #ddd;
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  font-weight: 900;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.nav-item.done .nav-step-num {
+  background: var(--check-green);
+  border-color: var(--check-green);
+  color: white;
+  font-size: 10px;
+}
+.nav-item.partial .nav-step-num {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: white;
+}
+.nav-item.active .nav-step-num:not(.done .nav-step-num) {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.nav-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: var(--body);
+  line-height: 1.3;
+}
+.nav-item.done .nav-text { color: #aaa; }
+
+.nav-mini-progress {
+  margin-left: auto;
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  color: #bbb;
+  white-space: nowrap;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  padding: 40px 48px;
+  max-width: 860px;
+}
+
+/* ── PART HEADER ── */
+.part-header {
+  background: var(--blue);
+  border-radius: 16px;
+  padding: 28px 36px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.part-num {
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--sage);
+  white-space: nowrap;
+}
+.part-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.2);
+}
+.part-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: 26px;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: white;
+  line-height: 1;
+}
+.part-desc {
+  margin-left: auto;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  max-width: 240px;
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* ── STEP CARD ── */
+.step-card {
+  background: var(--surface);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.step-card:hover { box-shadow: 0 2px 12px rgba(136,156,162,0.12); }
+
+.step-card-header {
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.step-card.open .step-card-header {
+  border-bottom-color: #F0F4F5;
+}
+
+.step-badge {
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--coral);
+  background: #FEF2EF;
+  border-radius: 50px;
+  padding: 4px 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--blue);
+  line-height: 1.2;
+  flex: 1;
+}
+
+.step-progress-pill {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #aaa;
+  background: var(--bg);
+  border-radius: 50px;
+  padding: 4px 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.step-progress-pill.done {
+  color: var(--check-green);
+  background: #EBF7EF;
+}
+.step-progress-pill.partial {
+  color: var(--blue);
+  background: #EEF4F5;
+}
+
+.step-chevron {
+  color: #ccc;
+  font-size: 16px;
+  transition: transform 0.25s;
+  flex-shrink: 0;
+}
+.step-card.open .step-chevron { transform: rotate(180deg); }
+
+.step-card-body {
+  display: none;
+  padding: 28px 28px 32px;
+}
+.step-card.open .step-card-body { display: block; }
+
+/* ── TASK ITEMS ── */
+.task-group {
+  margin-bottom: 24px;
+}
+.task-group:last-child { margin-bottom: 0; }
+
+.task-group-label {
+  font-family: 'Quick', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--coral);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #F5F5F5;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 -12px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-item:hover { background: var(--bg); }
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #D0D8DC;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: white;
+}
+.task-item.checked .task-checkbox {
+  background: var(--check-green);
+  border-color: var(--check-green);
+}
+.task-checkbox::after {
+  content: '';
+  width: 10px;
+  height: 7px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.task-item.checked .task-checkbox::after { opacity: 1; }
+
+.task-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  color: var(--body);
+  line-height: 1.55;
+  flex: 1;
+}
+.task-item.checked .task-text {
+  color: #aaa;
+  text-decoration: line-through;
+  text-decoration-color: #ccc;
+}
+
+.task-tag {
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 50px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.tag-terminal { color: var(--blue); background: #EEF4F5; }
+.tag-wordpress { color: #21759B; background: #EAF4FB; }
+.tag-finder { color: var(--coral); background: #FEF2EF; }
+.tag-warning { color: #B45309; background: var(--warn-bg); }
+.tag-verify { color: #5AA97A; background: #EBF7EF; }
+
+/* ── BODY TEXT ── */
+.step-body-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  color: var(--body);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+/* ── WARNING BOX ── */
+.warn-box {
+  background: var(--warn-bg);
+  border-left: 4px solid var(--warn-border);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.warn-box-title {
+  font-family: 'Quick', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #B45309;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.warn-box p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+/* ── INFO BOX ── */
+.info-box {
+  background: #EBF7EF;
+  border-left: 4px solid var(--check-green);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.info-box-title {
+  font-family: 'Quick', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #2D6A4F;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.info-box p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: #2D6A4F;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+/* ── CODE BLOCK ── */
+.code-block {
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 14px 0;
+  overflow-x: auto;
+}
+.code-block pre {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--code-text);
+  line-height: 1.65;
+  white-space: pre;
+}
+
+/* ── TABLE ── */
+.step-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.step-table th {
+  background: var(--blue);
+  color: white;
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 10px 14px;
+  text-align: left;
+}
+.step-table th:first-child { border-radius: 8px 0 0 0; }
+.step-table th:last-child { border-radius: 0 8px 0 0; }
+.step-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #F0F4F5;
+  color: var(--body);
+  font-family: 'Nunito', sans-serif;
+  vertical-align: top;
+}
+.step-table tr:nth-child(even) td { background: var(--bg); }
+.step-table code {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--blue);
+  background: #EEF4F5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── COMMAND REFERENCE ── */
+.command-ref {
+  background: var(--code-bg);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+.command-ref-label {
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--sage);
+  margin-bottom: 12px;
+  display: block;
+}
+.command-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.command-row:last-child { border-bottom: none; }
+.command-code {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--sage);
+  white-space: nowrap;
+  padding-top: 1px;
+}
+.command-desc {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+}
+
+/* ── QUICK REFERENCE CARD ── */
+.qr-card {
+  background: var(--blue);
+  border-radius: 16px;
+  padding: 32px 36px;
+  color: white;
+}
+.qr-card h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: white;
+  margin-bottom: 16px;
+}
+.qr-section {
+  margin-bottom: 24px;
+}
+.qr-section-label {
+  font-family: 'Quick', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--sage);
+  margin-bottom: 10px;
+}
+.qr-item {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.qr-item code {
+  font-family: 'Courier New', monospace;
+  color: var(--sage);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.qr-item span {
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+}
+
+/* ── WEEKLY CHECKLIST ── */
+.weekly-checklist {
+  background: var(--surface);
+  border: 2px solid var(--sage);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin: 16px 0;
+}
+.weekly-checklist h4 {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--blue);
+  margin-bottom: 16px;
+}
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  border: none;
+  border-bottom: 2px solid var(--sage);
+  margin: 40px 0;
+  opacity: 0.4;
+}
+
+/* ── DONE BANNER ── */
+.all-done-banner {
+  display: none;
+  background: var(--check-green);
+  border-radius: 16px;
+  padding: 28px 36px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+.all-done-banner h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: 28px;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: white;
+  margin-bottom: 8px;
+}
+.all-done-banner p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  color: rgba(255,255,255,0.85);
+}
+
+/* ── FILE STRUCTURE ── */
+.file-tree {
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 14px 0;
+}
+.file-tree pre {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre;
+}
+.file-tree .dir { color: var(--sage); }
+.file-tree .file { color: rgba(255,255,255,0.7); }
+.file-tree .comment { color: #6B8188; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: relative; top: auto; height: auto; border-right: none; border-bottom: 1px solid #E8EDEE; }
+  .main { padding: 28px 20px; }
+  .part-desc { display: none; }
+  .progress-bar-wrap { width: 120px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-left">
+    <h1>SCC AEO Blog Pipeline</h1>
+    <p>Setup &amp; Operations Guide — Simple Creator Co.</p>
+  </div>
+  <div class="overall-progress">
+    <span class="progress-label">Overall Progress</span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="overallBar" style="width:0%"></div>
+    </div>
+    <span class="progress-count" id="overallCount">0 / 0</span>
+    <button class="reset-btn" onclick="resetAll()">Reset All</button>
+  </div>
+</header>
+
+<!-- ── LAYOUT ─────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Part 1 — Setup</div>
+    <a class="nav-item" data-step="1" onclick="scrollTo('step1')">
+      <div class="nav-step-num">1</div>
+      <span class="nav-text">Install Claude Code</span>
+      <span class="nav-mini-progress" id="nav-prog-1"></span>
+    </a>
+    <a class="nav-item" data-step="2" onclick="scrollTo('step2')">
+      <div class="nav-step-num">2</div>
+      <span class="nav-text">Create folder structure</span>
+      <span class="nav-mini-progress" id="nav-prog-2"></span>
+    </a>
+    <a class="nav-item" data-step="3" onclick="scrollTo('step3')">
+      <div class="nav-step-num">3</div>
+      <span class="nav-text">Place pipeline files</span>
+      <span class="nav-mini-progress" id="nav-prog-3"></span>
+    </a>
+    <a class="nav-item" data-step="4" onclick="scrollTo('step4')">
+      <div class="nav-step-num">4</div>
+      <span class="nav-text">Create wp-term-cache.json</span>
+      <span class="nav-mini-progress" id="nav-prog-4"></span>
+    </a>
+    <a class="nav-item" data-step="5" onclick="scrollTo('step5')">
+      <div class="nav-step-num">5</div>
+      <span class="nav-text">Create .env file</span>
+      <span class="nav-mini-progress" id="nav-prog-5"></span>
+    </a>
+    <a class="nav-item" data-step="6" onclick="scrollTo('step6')">
+      <div class="nav-step-num">6</div>
+      <span class="nav-text">Get WordPress App Password</span>
+      <span class="nav-mini-progress" id="nav-prog-6"></span>
+    </a>
+    <a class="nav-item" data-step="7" onclick="scrollTo('step7')">
+      <div class="nav-step-num">7</div>
+      <span class="nav-text">Confirm Yoast SEO active</span>
+      <span class="nav-mini-progress" id="nav-prog-7"></span>
+    </a>
+    <a class="nav-item" data-step="8" onclick="scrollTo('step8')">
+      <div class="nav-step-num">8</div>
+      <span class="nav-text">Verify author page</span>
+      <span class="nav-mini-progress" id="nav-prog-8"></span>
+    </a>
+    <a class="nav-item" data-step="9" onclick="scrollTo('step9')">
+      <div class="nav-step-num">9</div>
+      <span class="nav-text">Disable Mac sleep</span>
+      <span class="nav-mini-progress" id="nav-prog-9"></span>
+    </a>
+    <a class="nav-item" data-step="10" onclick="scrollTo('step10')">
+      <div class="nav-step-num">10</div>
+      <span class="nav-text">Open project in Claude Code</span>
+      <span class="nav-mini-progress" id="nav-prog-10"></span>
+    </a>
+
+    <div class="sidebar-section-label">Part 2 — First Run</div>
+    <a class="nav-item" data-step="11" onclick="scrollTo('step11')">
+      <div class="nav-step-num">11</div>
+      <span class="nav-text">Run the pipeline</span>
+      <span class="nav-mini-progress" id="nav-prog-11"></span>
+    </a>
+    <a class="nav-item" data-step="12" onclick="scrollTo('step12')">
+      <div class="nav-step-num">12</div>
+      <span class="nav-text">Check usage after run</span>
+      <span class="nav-mini-progress" id="nav-prog-12"></span>
+    </a>
+    <a class="nav-item" data-step="13" onclick="scrollTo('step13')">
+      <div class="nav-step-num">13</div>
+      <span class="nav-text">If something goes wrong</span>
+      <span class="nav-mini-progress" id="nav-prog-13"></span>
+    </a>
+    <a class="nav-item" data-step="14" onclick="scrollTo('step14')">
+      <div class="nav-step-num">14</div>
+      <span class="nav-text">Review &amp; publish draft</span>
+      <span class="nav-mini-progress" id="nav-prog-14"></span>
+    </a>
+
+    <div class="sidebar-section-label">Part 3 — Scheduling</div>
+    <a class="nav-item" data-step="15" onclick="scrollTo('step15')">
+      <div class="nav-step-num">15</div>
+      <span class="nav-text">Create schedule file</span>
+      <span class="nav-mini-progress" id="nav-prog-15"></span>
+    </a>
+    <a class="nav-item" data-step="16" onclick="scrollTo('step16')">
+      <div class="nav-step-num">16</div>
+      <span class="nav-text">Activate the schedule</span>
+      <span class="nav-mini-progress" id="nav-prog-16"></span>
+    </a>
+    <a class="nav-item" data-step="17" onclick="scrollTo('step17')">
+      <div class="nav-step-num">17</div>
+      <span class="nav-text">Schedule freshness audit</span>
+      <span class="nav-mini-progress" id="nav-prog-17"></span>
+    </a>
+
+    <div class="sidebar-section-label">Part 4 — On-Demand</div>
+    <a class="nav-item" data-step="18" onclick="scrollTo('step18')">
+      <div class="nav-step-num">18</div>
+      <span class="nav-text">Request specific posts</span>
+      <span class="nav-mini-progress" id="nav-prog-18"></span>
+    </a>
+    <a class="nav-item" data-step="19" onclick="scrollTo('step19')">
+      <div class="nav-text">When to use each command</span>
+    </a>
+
+    <div class="sidebar-section-label">Part 5 — Maintenance</div>
+    <a class="nav-item" data-step="20" onclick="scrollTo('step20')">
+      <div class="nav-step-num">20</div>
+      <span class="nav-text">Monthly freshness audit</span>
+      <span class="nav-mini-progress" id="nav-prog-20"></span>
+    </a>
+    <a class="nav-item" data-step="21" onclick="scrollTo('step21')">
+      <div class="nav-step-num">21</div>
+      <span class="nav-text">Updating the pipeline</span>
+      <span class="nav-mini-progress" id="nav-prog-21"></span>
+    </a>
+    <a class="nav-item" data-step="22" onclick="scrollTo('step22')">
+      <div class="nav-step-num">22</div>
+      <span class="nav-text">Weekly routine</span>
+      <span class="nav-mini-progress" id="nav-prog-22"></span>
+    </a>
+
+    <div class="sidebar-section-label">Quick Reference</div>
+    <a class="nav-item" onclick="scrollTo('quickref')">
+      <div class="nav-step-num" style="font-size:14px;">★</div>
+      <span class="nav-text">Commands &amp; quick fixes</span>
+    </a>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <div class="all-done-banner" id="allDoneBanner">
+      <h2>🎉 All Set!</h2>
+      <p>Every step is checked off. Your pipeline is ready to run.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PART 1 — ONE-TIME SETUP
+    ════════════════════════════════════════════════════════ -->
+    <div class="part-header">
+      <span class="part-num">Part 1</span>
+      <div class="part-divider"></div>
+      <span class="part-title">One-Time Setup</span>
+      <span class="part-desc">Do these steps once — you'll never need to repeat them</span>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step-card" id="step1">
+      <div class="step-card-header" onclick="toggleStep('step1')">
+        <span class="step-badge">Step 1</span>
+        <span class="step-title">Install Claude Code</span>
+        <span class="step-progress-pill" id="pill-step1">0 / 6</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Claude Code is the desktop app you'll use to run everything. It's included in your Max plan — no extra cost.</p>
+
+        <span class="task-group-label">Download &amp; Install</span>
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t1-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Open Safari or Chrome on your Mac</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t1-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Go to <strong>claude.ai/download</strong> and download the Mac version (file ends in .dmg)</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t1-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Open your Downloads folder, double-click the .dmg file, then drag Claude into your Applications folder</span>
+            <span class="task-tag tag-finder">Finder</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t1-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Open Claude from Applications. If Mac asks "Are you sure?" — click Open</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t1-5">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Log in with the <em>same Anthropic account</em> as your Max plan subscription (don't create a new account)</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t1-6">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Test: type "Hello" in the chat and press Enter — Claude should reply ✓</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box-title">✅ No extra billing setup needed</div>
+          <p>Claude Code is included in your Max plan. No Anthropic Console account, no API credits, no separate charges.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-card" id="step2">
+      <div class="step-card-header" onclick="toggleStep('step2')">
+        <span class="step-badge">Step 2</span>
+        <span class="step-title">Create the Project Folder Structure</span>
+        <span class="step-progress-pill" id="pill-step2">0 / 5</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">All pipeline files live in one folder on your Mac. Use Terminal to create everything at once — it's faster and avoids hidden-folder issues.</p>
+
+        <div class="warn-box">
+          <div class="warn-box-title">⚠️ Folders starting with a dot (.claude) are hidden on Mac</div>
+          <p>After creating the folders, press <strong>Cmd + Shift + .</strong> in Finder to show hidden files. Press the same keys again to hide them. Claude Code will still see them regardless.</p>
+        </div>
+
+        <span class="task-group-label">Create all folders with one Terminal command</span>
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t2-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Open Terminal: press <strong>Cmd + Space</strong>, type <em>Terminal</em>, press Enter</span>
+            <span class="task-tag tag-terminal">Terminal</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t2-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Paste and run this command (creates all folders at once):</span>
+          </div>
+        </div>
+
+        <div class="code-block"><pre>mkdir -p ~/Documents/scc-blog-pipeline/.claude/agents \
+  ~/Documents/scc-blog-pipeline/.claude/commands \
+  ~/Documents/scc-blog-pipeline/data \
+  ~/Documents/scc-blog-pipeline/logs</pre></div>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t2-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Verify it worked — run: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">ls ~/Documents/scc-blog-pipeline/</code> — you should see <em>.claude  data  logs</em></span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t2-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Finder, navigate to Documents → scc-blog-pipeline. Press <strong>Cmd+Shift+.</strong> to confirm .claude folder is visible</span>
+            <span class="task-tag tag-finder">Finder</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t2-5">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Confirm final structure: <em>scc-blog-pipeline/</em> contains <em>.claude/agents/</em>, <em>.claude/commands/</em>, <em>data/</em>, and <em>logs/</em></span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-card" id="step3">
+      <div class="step-card-header" onclick="toggleStep('step3')">
+        <span class="step-badge">Step 3</span>
+        <span class="step-title">Place All Pipeline Files</span>
+        <span class="step-progress-pill" id="pill-step3">0 / 3</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">You have all pipeline files in your Claude project. Each one goes in a specific folder — use the table below as your checklist.</p>
+
+        <table class="step-table">
+          <thead><tr><th>File</th><th>Goes in</th></tr></thead>
+          <tbody>
+            <tr><td>01-topic-cluster-manager.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>02-ai-question-miner.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>03-competitor-citation-auditor.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>04-aeo-content-strategist.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>05-internal-link-mapper.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>06-writer.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>07-aeo-auditor.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>08-schema-metadata-writer.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>09-wordpress-publisher.md</td><td><code>.claude/agents/</code></td></tr>
+            <tr><td>run-aeo-pipeline.md</td><td><code>.claude/commands/</code></td></tr>
+            <tr><td>request-post.md</td><td><code>.claude/commands/</code></td></tr>
+            <tr><td>run-freshness-audit.md</td><td><code>.claude/commands/</code></td></tr>
+            <tr><td>brand-context.md</td><td><code>data/</code></td></tr>
+            <tr><td>teaching-frameworks.md</td><td><code>data/</code></td></tr>
+            <tr><td>topic-log.md</td><td><code>data/</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t3-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">All 9 agent files placed in <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">.claude/agents/</code></span>
+            <span class="task-tag tag-finder">Finder</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t3-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">All 3 command files placed in <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">.claude/commands/</code></span>
+            <span class="task-tag tag-finder">Finder</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t3-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">3 data files (brand-context, teaching-frameworks, topic-log) placed in <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">data/</code></span>
+            <span class="task-tag tag-finder">Finder</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-card" id="step4">
+      <div class="step-card-header" onclick="toggleStep('step4')">
+        <span class="step-badge">Step 4</span>
+        <span class="step-title">Create the wp-term-cache.json File</span>
+        <span class="step-progress-pill" id="pill-step4">0 / 2</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">This file starts empty and the pipeline fills it automatically on first run. It caches your WordPress category and tag IDs so it doesn't re-query them every time.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t4-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Terminal, run this command to create the empty file:</span>
+          </div>
+        </div>
+
+        <div class="code-block"><pre>echo '{}' > ~/Documents/scc-blog-pipeline/data/wp-term-cache.json</pre></div>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t4-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Verify it worked: run <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">cat ~/Documents/scc-blog-pipeline/data/wp-term-cache.json</code> — you should see <em>{}</em></span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step-card" id="step5">
+      <div class="step-card-header" onclick="toggleStep('step5')">
+        <span class="step-badge">Step 5</span>
+        <span class="step-title">Create the .env File</span>
+        <span class="step-progress-pill" id="pill-step5">0 / 3</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">The .env file stores your WordPress credentials securely. The pipeline reads it automatically each run. Think of it as a keychain file — you set it once and forget about it.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t5-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Terminal, create the .env file (replace placeholder values with your real credentials):</span>
+          </div>
+        </div>
+
+        <div class="code-block"><pre>cat > ~/Documents/scc-blog-pipeline/.env << 'EOF'
+WP_SITE_URL=https://thesimplecreator.com
+WP_USERNAME=your_wordpress_username_here
+WP_APP_PASSWORD=your_app_password_here
+EOF</pre></div>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t5-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Verify: run <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">cat ~/Documents/scc-blog-pipeline/.env</code> — you should see all 3 lines</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t5-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">After getting your App Password (Step 6), update the file: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">nano ~/Documents/scc-blog-pipeline/.env</code> — edit, then Ctrl+X → Y → Enter</span>
+            <span class="task-tag tag-terminal">Terminal</span>
+          </div>
+        </div>
+
+        <div class="warn-box">
+          <div class="warn-box-title">⚠️ Never share this file</div>
+          <p>The .env file contains your WordPress password. Never email it, upload to Google Drive, or share with anyone. If you ever need to move the pipeline to a new computer, recreate the file from scratch.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step-card" id="step6">
+      <div class="step-card-header" onclick="toggleStep('step6')">
+        <span class="step-badge">Step 6</span>
+        <span class="step-title">Get Your WordPress Application Password</span>
+        <span class="step-progress-pill" id="pill-step6">0 / 6</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">An Application Password is a special one-purpose password just for apps — completely separate from your regular WordPress login. Even if someone got it, they couldn't log into your dashboard with it.</p>
+
+        <span class="task-group-label">Create the Application Password</span>
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t6-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Go to <strong>thesimplecreator.com/wp-admin</strong> and log in normally</span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t6-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In the left sidebar: hover over <strong>Users</strong> → click <strong>Profile</strong></span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t6-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Scroll all the way down to the <strong>Application Passwords</strong> section</span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t6-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In the name field, type: <em>SCC Blog Pipeline</em> — then click <strong>Add New Application Password</strong></span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t6-5">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Copy the generated password immediately — it looks like: <em>xxxx xxxx xxxx xxxx xxxx xxxx</em></span>
+            <span class="task-tag tag-warning">⚠️ Shows Once</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t6-6">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Paste the password into your .env file: open Terminal → <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">nano ~/Documents/scc-blog-pipeline/.env</code> → replace <em>your_app_password_here</em> → Ctrl+X → Y → Enter</span>
+            <span class="task-tag tag-terminal">Terminal</span>
+          </div>
+        </div>
+
+        <div class="warn-box">
+          <div class="warn-box-title">⚠️ WordPress only shows this password once</div>
+          <p>If you miss it, you'll need to delete it in WordPress and create a new one. Copy it before clicking anything else.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="step-card" id="step7">
+      <div class="step-card-header" onclick="toggleStep('step7')">
+        <span class="step-badge">Step 7</span>
+        <span class="step-title">Confirm Yoast SEO is Active</span>
+        <span class="step-progress-pill" id="pill-step7">0 / 2</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">The pipeline writes Yoast SEO metadata for every post. If Yoast isn't active, the metadata fields won't populate and you'll lose the SEO advantage.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t7-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In WordPress admin: click <strong>Plugins</strong> → <strong>Installed Plugins</strong> → find <strong>Yoast SEO</strong> in the list</span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t7-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Confirm it shows as <strong>Active</strong>. If not: click Activate. If it's missing entirely: click Add New, search Yoast SEO, install and activate.</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 8 -->
+    <div class="step-card" id="step8">
+      <div class="step-card-header" onclick="toggleStep('step8')">
+        <span class="step-badge">Step 8</span>
+        <span class="step-title">Verify Your Author Page Exists</span>
+        <span class="step-progress-pill" id="pill-step8">0 / 1</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Every post includes author schema markup that links to your About page. This helps AI tools recognise you as the named expert and authority. If the page isn't live, the schema breaks.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t8-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Open a browser and visit <strong>thesimplecreator.com/about</strong> — the page should load publicly with no errors. If it's not published, go to WordPress and publish it.</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 9 -->
+    <div class="step-card" id="step9">
+      <div class="step-card-header" onclick="toggleStep('step9')">
+        <span class="step-badge">Step 9</span>
+        <span class="step-title">Disable Mac Sleep</span>
+        <span class="step-progress-pill" id="pill-step9">0 / 3</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">If you're running the pipeline on a schedule overnight, your Mac must stay awake. If it sleeps, the scheduled run won't happen.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t9-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Apple menu (top-left) → <strong>System Settings</strong> → <strong>Displays</strong> → set "Turn off display after" to <strong>Never</strong> or a long duration</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t9-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Go back → <strong>Battery</strong> → <strong>Options</strong> → enable <strong>"Prevent Mac from sleeping automatically when the display is off"</strong></span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t9-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Plug your Mac in before leaving it overnight — battery mode may override these settings</span>
+            <span class="task-tag tag-warning">⚠️ Important</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 10 -->
+    <div class="step-card" id="step10">
+      <div class="step-card-header" onclick="toggleStep('step10')">
+        <span class="step-badge">Step 10</span>
+        <span class="step-title">Open the Project in Claude Code</span>
+        <span class="step-progress-pill" id="pill-step10">0 / 3</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Claude Code needs to know which folder your pipeline lives in. This is called "opening a project."</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t10-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Open Claude Code. Use the menu <strong>File → Open Folder</strong> (or similar) and select your <strong>scc-blog-pipeline</strong> folder from Documents</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t10-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Confirm the file browser on the left shows <em>.claude</em>, <em>data</em>, and <em>logs</em> folders</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t10-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Quick test: type <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">/run-aeo-pipeline</code> in the chat. Claude Code should recognise it as a command. (Don't let it run yet — just confirm it's recognised.)</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box-title">✅ Setup is complete!</div>
+          <p>If the command is recognised, your folder structure is correct and you're ready for the first run.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PART 2 — FIRST RUN
+    ════════════════════════════════════════════════════════ -->
+    <hr class="section-divider">
+    <div class="part-header">
+      <span class="part-num">Part 2</span>
+      <div class="part-divider"></div>
+      <span class="part-title">First Run</span>
+      <span class="part-desc">Run manually during the day to catch any issues</span>
+    </div>
+
+    <!-- STEP 11 -->
+    <div class="step-card" id="step11">
+      <div class="step-card-header" onclick="toggleStep('step11')">
+        <span class="step-badge">Step 11</span>
+        <span class="step-title">Run the Pipeline for the First Time</span>
+        <span class="step-progress-pill" id="pill-step11">0 / 4</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Do your first run during the day while you can watch it. Each post takes 20–45 minutes — the pipeline does live web research and a thorough 28-item audit.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t11-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Claude Code, type exactly: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">/run-aeo-pipeline</code> and press Enter</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t11-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Watch it work through all 9 agents. Don't close Claude Code. You can minimise the window.</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t11-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Wait for the completion message showing the WordPress draft URL (20–45 minutes)</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t11-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Click the draft URL in the completion message and confirm the draft appeared in WordPress</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+        </div>
+
+        <table class="step-table">
+          <thead><tr><th>Agent</th><th>What it's doing</th><th>Time</th></tr></thead>
+          <tbody>
+            <tr><td>Agent 1</td><td>Reads topic log, decides what cluster to cover</td><td>1–2 min</td></tr>
+            <tr><td>Agent 2</td><td>Live web research — finds real questions people ask</td><td>3–5 min</td></tr>
+            <tr><td>Agent 3</td><td>Reads competing pages, builds a beat-this brief</td><td>3–5 min</td></tr>
+            <tr><td>Agent 4</td><td>Designs the post blueprint and strategy</td><td>1–2 min</td></tr>
+            <tr><td>Agent 5</td><td>Maps internal links to weave in</td><td>1 min</td></tr>
+            <tr><td>Agent 6</td><td>Writes the full post in your voice</td><td>5–10 min</td></tr>
+            <tr><td>Agent 7</td><td>28-item quality audit (may loop back to Agent 6)</td><td>3–5 min</td></tr>
+            <tr><td>Agent 8</td><td>Writes SEO metadata, schema, tags</td><td>1–2 min</td></tr>
+            <tr><td>Agent 9</td><td>Publishes draft to WordPress via REST API</td><td>1–2 min</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STEP 12 -->
+    <div class="step-card" id="step12">
+      <div class="step-card-header" onclick="toggleStep('step12')">
+        <span class="step-badge">Step 12</span>
+        <span class="step-title">Check Usage After the First Run</span>
+        <span class="step-progress-pill" id="pill-step12">0 / 2</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">The pipeline runs on your Max plan's usage allocation. Check how much one post consumed — this tells you how many posts you can comfortably run per batch or per week.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t12-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Claude Code, type: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">/status</code> and press Enter to see usage consumed</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t12-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Note how much one post used. If usage is low: you can run 3–5 posts per batch. If higher: run posts on separate days.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 13 -->
+    <div class="step-card" id="step13">
+      <div class="step-card-header" onclick="toggleStep('step13')">
+        <span class="step-badge">Step 13</span>
+        <span class="step-title">If Something Goes Wrong</span>
+        <span class="step-progress-pill" id="pill-step13">0 / 1</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Most errors have a simple fix. Here's what to look for:</p>
+
+        <table class="step-table">
+          <thead><tr><th>Error message</th><th>What it means</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>PIPELINE HALTED — WordPress API unreachable</code></td><td>Can't connect to your site</td><td>Check .env file values. Confirm WP_APP_PASSWORD is the App Password, not your login password.</td></tr>
+            <tr><td><code>Missing required environment variable</code></td><td>A line is missing from your .env file</td><td>Open .env in nano, confirm all 3 lines are there. Restart Claude Code.</td></tr>
+            <tr><td><code>Agent 7 failed 3 times — saved to review-queue</code></td><td>Post didn't pass quality audit</td><td>Check data/review-queue/ for the saved draft. Read it — it may still be usable.</td></tr>
+            <tr><td><code>WordPress API error during publishing</code></td><td>Post was written but couldn't be uploaded</td><td>Check data/failed-posts/ — the content is saved. Paste it into WordPress manually.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t13-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Read through the error guide above so you know where to look if something fails</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 14 -->
+    <div class="step-card" id="step14">
+      <div class="step-card-header" onclick="toggleStep('step14')">
+        <span class="step-badge">Step 14</span>
+        <span class="step-title">Review and Publish Your First Draft</span>
+        <span class="step-progress-pill" id="pill-step14">0 / 5</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">All posts are created as drafts — you always review before publishing. The whole review process should take 5–10 minutes per post.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t14-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Go to: <strong>thesimplecreator.com/wp-admin/edit.php?post_status=draft&post_type=post</strong></span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t14-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Click the new draft to open it in the editor</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t14-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Read the <strong>SCC AEO Pipeline — Editor Note</strong> at the very top of the post (30 seconds — tells you the target question, competition, and why this post wins)</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t14-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Skim the post — it should sound like you. Make any edits you want.</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t14-5">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Click <strong>Publish</strong> when you're happy</span>
+            <span class="task-tag tag-wordpress">WordPress</span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box-title">✅ The editor note won't appear on the live post</div>
+          <p>It's only visible inside your WordPress drafts editor. Readers never see it.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PART 3 — SCHEDULING
+    ════════════════════════════════════════════════════════ -->
+    <hr class="section-divider">
+    <div class="part-header">
+      <span class="part-num">Part 3</span>
+      <div class="part-divider"></div>
+      <span class="part-title">Scheduling Overnight Runs</span>
+      <span class="part-desc">Set it once and wake up to new drafts</span>
+    </div>
+
+    <!-- STEP 15 -->
+    <div class="step-card" id="step15">
+      <div class="step-card-header" onclick="toggleStep('step15')">
+        <span class="step-badge">Step 15</span>
+        <span class="step-title">Create the Schedule File</span>
+        <span class="step-progress-pill" id="pill-step15">0 / 4</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Your Mac has a built-in task scheduler called launchd — like setting an alarm that runs a program instead of playing a sound. You create one small settings file and it handles everything.</p>
+
+        <div class="warn-box">
+          <div class="warn-box-title">⚠️ Replace /Users/rebeccarice with your actual home folder path</div>
+          <p>First run <code style="font-family:monospace;background:rgba(255,255,255,0.3);padding:2px 6px;border-radius:4px;">echo $HOME</code> in Terminal to get your exact path. Replace every instance of <em>/Users/rebeccarice</em> in the command below with what you see.</p>
+        </div>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t15-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Run <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">echo $HOME</code> in Terminal and note your home path</span>
+            <span class="task-tag tag-terminal">Terminal</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t15-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Create the schedule file — paste this command in Terminal (with your home path substituted):</span>
+          </div>
+        </div>
+
+        <div class="code-block"><pre>cat > ~/Library/LaunchAgents/com.scc.blog-pipeline.plist << 'EOF'
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;
+  &lt;string&gt;com.scc.blog-pipeline&lt;/string&gt;
+  &lt;key&gt;ProgramArguments&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;/usr/local/bin/claude&lt;/string&gt;
+    &lt;string&gt;--project&lt;/string&gt;
+    &lt;string&gt;/Users/rebeccarice/Documents/scc-blog-pipeline&lt;/string&gt;
+    &lt;string&gt;/run-aeo-pipeline&lt;/string&gt;
+    &lt;string&gt;1&lt;/string&gt;
+  &lt;/array&gt;
+  &lt;key&gt;WorkingDirectory&lt;/key&gt;
+  &lt;string&gt;/Users/rebeccarice/Documents/scc-blog-pipeline&lt;/string&gt;
+  &lt;key&gt;StartCalendarInterval&lt;/key&gt;
+  &lt;array&gt;
+    &lt;dict&gt;&lt;key&gt;Hour&lt;/key&gt;&lt;integer&gt;23&lt;/integer&gt;
+          &lt;key&gt;Minute&lt;/key&gt;&lt;integer&gt;0&lt;/integer&gt;
+          &lt;key&gt;Weekday&lt;/key&gt;&lt;integer&gt;1&lt;/integer&gt;&lt;/dict&gt;
+    &lt;dict&gt;&lt;key&gt;Hour&lt;/key&gt;&lt;integer&gt;23&lt;/integer&gt;
+          &lt;key&gt;Minute&lt;/key&gt;&lt;integer&gt;0&lt;/integer&gt;
+          &lt;key&gt;Weekday&lt;/key&gt;&lt;integer&gt;2&lt;/integer&gt;&lt;/dict&gt;
+    &lt;dict&gt;&lt;key&gt;Hour&lt;/key&gt;&lt;integer&gt;23&lt;/integer&gt;
+          &lt;key&gt;Minute&lt;/key&gt;&lt;integer&gt;0&lt;/integer&gt;
+          &lt;key&gt;Weekday&lt;/key&gt;&lt;integer&gt;3&lt;/integer&gt;&lt;/dict&gt;
+    &lt;dict&gt;&lt;key&gt;Hour&lt;/key&gt;&lt;integer&gt;23&lt;/integer&gt;
+          &lt;key&gt;Minute&lt;/key&gt;&lt;integer&gt;0&lt;/integer&gt;
+          &lt;key&gt;Weekday&lt;/key&gt;&lt;integer&gt;4&lt;/integer&gt;&lt;/dict&gt;
+    &lt;dict&gt;&lt;key&gt;Hour&lt;/key&gt;&lt;integer&gt;23&lt;/integer&gt;
+          &lt;key&gt;Minute&lt;/key&gt;&lt;integer&gt;0&lt;/integer&gt;
+          &lt;key&gt;Weekday&lt;/key&gt;&lt;integer&gt;5&lt;/integer&gt;&lt;/dict&gt;
+  &lt;/array&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;
+  &lt;string&gt;/Users/rebeccarice/Documents/scc-blog-pipeline/logs/pipeline.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;
+  &lt;string&gt;/Users/rebeccarice/Documents/scc-blog-pipeline/logs/pipeline-error.log&lt;/string&gt;
+&lt;/dict&gt;&lt;/plist&gt;
+EOF</pre></div>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t15-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">The number <strong>1</strong> in the &lt;string&gt;1&lt;/string&gt; line = posts per night. Change to 3 if you want 3 posts, etc.</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t15-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text">This schedule runs Monday–Friday at 11 PM. Adjust Weekday numbers (1=Mon, 2=Tue ... 7=Sun) or Hour integer if you want different timing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 16 -->
+    <div class="step-card" id="step16">
+      <div class="step-card-header" onclick="toggleStep('step16')">
+        <span class="step-badge">Step 16</span>
+        <span class="step-title">Activate the Schedule</span>
+        <span class="step-progress-pill" id="pill-step16">0 / 3</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t16-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Terminal, run:</span>
+          </div>
+        </div>
+        <div class="code-block"><pre>launchctl load ~/Library/LaunchAgents/com.scc.blog-pipeline.plist</pre></div>
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t16-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Verify it's active — run: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">launchctl list | grep scc</code> — you should see <em>com.scc.blog-pipeline</em> in the output</span>
+            <span class="task-tag tag-verify">Verify</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t16-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text">To pause the schedule any time: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">launchctl unload ~/Library/LaunchAgents/com.scc.blog-pipeline.plist</code></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 17 -->
+    <div class="step-card" id="step17">
+      <div class="step-card-header" onclick="toggleStep('step17')">
+        <span class="step-badge">Step 17</span>
+        <span class="step-title">Schedule the Monthly Freshness Audit</span>
+        <span class="step-progress-pill" id="pill-step17">0 / 2</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">The freshness audit checks all your existing posts and flags anything that's gone stale — set it to run once a month automatically.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t17-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Create a second schedule file for the monthly audit (same process as Step 15 — substitute your home path). Set it to run on the first Sunday of each month at 10 PM (Hour: 22, Weekday: 1 with Day: 1–7 logic). You can also just run <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">/run-freshness-audit</code> manually each month instead.</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t17-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Add a recurring reminder to your calendar: <strong>First Sunday of every month — Run freshness audit</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PART 4 — ON-DEMAND
+    ════════════════════════════════════════════════════════ -->
+    <hr class="section-divider">
+    <div class="part-header">
+      <span class="part-num">Part 4</span>
+      <div class="part-divider"></div>
+      <span class="part-title">On-Demand Posts</span>
+      <span class="part-desc">Write any specific post or brainstorm a campaign</span>
+    </div>
+
+    <!-- STEP 18 -->
+    <div class="step-card" id="step18">
+      <div class="step-card-header" onclick="toggleStep('step18')">
+        <span class="step-badge">Step 18</span>
+        <span class="step-title">Request Specific Posts &amp; Brainstorms</span>
+        <span class="step-progress-pill" id="pill-step18">0 / 1</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Two ways to use the on-demand command — request a specific post, or brainstorm ideas for a theme or campaign first.</p>
+
+        <div class="command-ref">
+          <span class="command-ref-label">On-Demand Command Examples</span>
+          <div class="command-row">
+            <span class="command-code">/request-post "topic"</span>
+            <span class="command-desc">Writes one specific post you've chosen. Skips Agents 1 &amp; 2 and goes straight to research and writing.</span>
+          </div>
+          <div class="command-row">
+            <span class="command-code">/request-post "why I don't recommend Etsy for digital products"</span>
+            <span class="command-desc">Example — writes that specific post immediately</span>
+          </div>
+          <div class="command-row">
+            <span class="command-code">/request-post "how to price your first digital product"</span>
+            <span class="command-desc">Example — writes that specific post immediately</span>
+          </div>
+          <div class="command-row">
+            <span class="command-code">/request-post brainstorm "Flodesk partnership" 10</span>
+            <span class="command-desc">Generates 10 post ideas around the Flodesk partnership theme — no posts written yet</span>
+          </div>
+          <div class="command-row">
+            <span class="command-code">/request-post brainstorm "beginner objections" 8</span>
+            <span class="command-desc">Generates 8 ideas about beginner objections — pick the ones you want, then request each one</span>
+          </div>
+        </div>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t18-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Try one on-demand request — either a specific topic or a brainstorm — to get familiar with how it works</span>
+          </div>
+        </div>
+
+        <table class="step-table" style="margin-top:20px;">
+          <thead><tr><th>Situation</th><th>Use this</th></tr></thead>
+          <tbody>
+            <tr><td>Regular daily/weekly posts on auto</td><td><code>/run-aeo-pipeline</code> on a schedule</td></tr>
+            <tr><td>Want a specific post written now</td><td><code>/request-post "topic"</code></td></tr>
+            <tr><td>Planning a campaign (like Flodesk)</td><td><code>/request-post brainstorm "theme"</code> first</td></tr>
+            <tr><td>Monthly health check on existing posts</td><td><code>/run-freshness-audit</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PART 5 — MAINTENANCE
+    ════════════════════════════════════════════════════════ -->
+    <hr class="section-divider">
+    <div class="part-header">
+      <span class="part-num">Part 5</span>
+      <div class="part-divider"></div>
+      <span class="part-title">Ongoing Maintenance</span>
+      <span class="part-desc">Keep the pipeline up to date as your business grows</span>
+    </div>
+
+    <!-- STEP 20 -->
+    <div class="step-card" id="step20">
+      <div class="step-card-header" onclick="toggleStep('step20')">
+        <span class="step-badge">Monthly</span>
+        <span class="step-title">Run the Freshness Audit</span>
+        <span class="step-progress-pill" id="pill-step20">0 / 2</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Once a month, run the freshness audit to flag any posts that have gone stale, are missing AEO elements, or have outdated information.</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t20-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text">In Claude Code, type: <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">/run-freshness-audit</code> and press Enter</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t20-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text">Read the output report — it gives you a prioritised list of posts that need updating, with specific fix instructions for each one</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 21 -->
+    <div class="step-card" id="step21">
+      <div class="step-card-header" onclick="toggleStep('step21')">
+        <span class="step-badge">When Needed</span>
+        <span class="step-title">Updating the Pipeline When Things Change</span>
+        <span class="step-progress-pill" id="pill-step21">0 / 5</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">As your business grows, a few things in the pipeline files need occasional updating. Here's exactly what to change and where:</p>
+
+        <div class="task-group">
+          <div class="task-item" onclick="toggleTask(this)" data-id="t21-1">
+            <div class="task-checkbox"></div>
+            <span class="task-text"><strong>Student count grows</strong> — update "8,800 students" in <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">06-writer.md</code> Section 14 (author bio block)</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t21-2">
+            <div class="task-checkbox"></div>
+            <span class="task-text"><strong>Flodesk affiliate link changes</strong> — find <em>partners.flodesk.com/rebeccarice-blog</em> in both <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">data/teaching-frameworks.md</code> and <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">05-internal-link-mapper.md</code> — replace both</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t21-3">
+            <div class="task-checkbox"></div>
+            <span class="task-text"><strong>New student testimonial</strong> — add to <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">data/teaching-frameworks.md</code> at the [TESTIMONIAL PLACEHOLDER] tags and to <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">data/brand-context.md</code> in the student results section</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t21-4">
+            <div class="task-checkbox"></div>
+            <span class="task-text"><strong>Teaching position changes</strong> — update <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">data/teaching-frameworks.md</code> in the relevant section</span>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)" data-id="t21-5">
+            <div class="task-checkbox"></div>
+            <span class="task-text"><strong>New product launches</strong> — update <code style="font-family:monospace;background:#eef4f5;padding:2px 6px;border-radius:4px;color:var(--blue)">data/brand-context.md</code> products table and CTA matching guide</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 22 -->
+    <div class="step-card" id="step22">
+      <div class="step-card-header" onclick="toggleStep('step22')">
+        <span class="step-badge">Weekly</span>
+        <span class="step-title">Your Weekly Routine</span>
+        <span class="step-progress-pill" id="pill-step22">0 / 5</span>
+        <span class="step-chevron">▾</span>
+      </div>
+      <div class="step-card-body">
+        <p class="step-body-text">Total time: 5–10 minutes per post, 20–30 minutes per week for 3–5 posts.</p>
+
+        <div class="weekly-checklist">
+          <h4>Every week — in this order</h4>
+          <div class="task-group">
+            <div class="task-item" onclick="toggleTask(this)" data-id="t22-1">
+              <div class="task-checkbox"></div>
+              <span class="task-text">Check WordPress Drafts: <strong>wp-admin → Posts → Drafts</strong></span>
+              <span class="task-tag tag-wordpress">WordPress</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)" data-id="t22-2">
+              <div class="task-checkbox"></div>
+              <span class="task-text">For each new draft: read the editor note at the top (30 seconds — tells you what the post is and why it was written)</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)" data-id="t22-3">
+              <div class="task-checkbox"></div>
+              <span class="task-text">Skim the post content — does it sound like you?</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)" data-id="t22-4">
+              <div class="task-checkbox"></div>
+              <span class="task-text">Hit Publish (or flag anything that feels off)</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)" data-id="t22-5">
+              <div class="task-checkbox"></div>
+              <span class="task-text">Done. Your blog is growing while you were doing other things.</span>
+              <span class="task-tag tag-verify">✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         QUICK REFERENCE
+    ════════════════════════════════════════════════════════ -->
+    <hr class="section-divider">
+    <div id="quickref" class="qr-card">
+      <h3>Quick Reference</h3>
+
+      <div class="qr-section">
+        <div class="qr-section-label">The 3 Commands</div>
+        <div class="qr-item">
+          <code>/run-aeo-pipeline</code>
+          <span>Writes 1 post automatically. Add a number for more: /run-aeo-pipeline 3</span>
+        </div>
+        <div class="qr-item">
+          <code>/request-post "topic"</code>
+          <span>Writes one specific post you've chosen. Use /request-post brainstorm "theme" to generate ideas first.</span>
+        </div>
+        <div class="qr-item">
+          <code>/run-freshness-audit</code>
+          <span>Monthly audit of all published posts. Flags stale content and gives you specific fix instructions.</span>
+        </div>
+        <div class="qr-item">
+          <code>/status</code>
+          <span>Check how much of your Max plan's usage the last run consumed.</span>
+        </div>
+      </div>
+
+      <div class="qr-section">
+        <div class="qr-section-label">Common Fixes</div>
+        <div class="qr-item">
+          <code>Won't connect to WP →</code>
+          <span>Check your .env file. Confirm WP_APP_PASSWORD is the Application Password, not your login password.</span>
+        </div>
+        <div class="qr-item">
+          <code>Post stuck in audit loop →</code>
+          <span>Check data/review-queue/ folder for the saved draft.</span>
+        </div>
+        <div class="qr-item">
+          <code>Usage limit reached →</code>
+          <span>Wait for the 5-hour window to reset, or run /status to check remaining capacity.</span>
+        </div>
+      </div>
+
+      <div class="qr-section">
+        <div class="qr-section-label">Key Locations</div>
+        <div class="qr-item">
+          <code>WordPress drafts →</code>
+          <span>thesimplecreator.com/wp-admin/edit.php?post_status=draft&amp;post_type=post</span>
+        </div>
+        <div class="qr-item">
+          <code>Local post backups →</code>
+          <span>scc-blog-pipeline/data/drafts/</span>
+        </div>
+        <div class="qr-item">
+          <code>Failed posts →</code>
+          <span>scc-blog-pipeline/data/failed-posts/</span>
+        </div>
+        <div class="qr-item">
+          <code>Review queue →</code>
+          <span>scc-blog-pipeline/data/review-queue/</span>
+        </div>
+        <div class="qr-item">
+          <code>Pipeline logs →</code>
+          <span>scc-blog-pipeline/logs/pipeline.log</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </main>
+</div>
+
+<script>
+// ── STORAGE KEY ──────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'scc-pipeline-checklist-v1';
+
+// ── STEP → TASKS MAP ─────────────────────────────────────────────────────────
+const stepTasks = {
+  step1:  ['t1-1','t1-2','t1-3','t1-4','t1-5','t1-6'],
+  step2:  ['t2-1','t2-2','t2-3','t2-4','t2-5'],
+  step3:  ['t3-1','t3-2','t3-3'],
+  step4:  ['t4-1','t4-2'],
+  step5:  ['t5-1','t5-2','t5-3'],
+  step6:  ['t6-1','t6-2','t6-3','t6-4','t6-5','t6-6'],
+  step7:  ['t7-1','t7-2'],
+  step8:  ['t8-1'],
+  step9:  ['t9-1','t9-2','t9-3'],
+  step10: ['t10-1','t10-2','t10-3'],
+  step11: ['t11-1','t11-2','t11-3','t11-4'],
+  step12: ['t12-1','t12-2'],
+  step13: ['t13-1'],
+  step14: ['t14-1','t14-2','t14-3','t14-4','t14-5'],
+  step15: ['t15-1','t15-2','t15-3','t15-4'],
+  step16: ['t16-1','t16-2','t16-3'],
+  step17: ['t17-1','t17-2'],
+  step18: ['t18-1'],
+  step20: ['t20-1','t20-2'],
+  step21: ['t21-1','t21-2','t21-3','t21-4','t21-5'],
+  step22: ['t22-1','t22-2','t22-3','t22-4','t22-5'],
+};
+
+// ── LOAD STATE ───────────────────────────────────────────────────────────────
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch(e) { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+// ── TOGGLE TASK ──────────────────────────────────────────────────────────────
+function toggleTask(el) {
+  const id = el.dataset.id;
+  const checked = el.classList.toggle('checked');
+  state[id] = checked;
+  saveState(state);
+  updateAll();
+}
+
+// ── TOGGLE STEP OPEN/CLOSE ───────────────────────────────────────────────────
+function toggleStep(stepId) {
+  const card = document.getElementById(stepId);
+  card.classList.toggle('open');
+}
+
+// ── SCROLL TO STEP ───────────────────────────────────────────────────────────
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!el.classList.contains('open')) el.classList.add('open');
+  }
+}
+
+// ── UPDATE ALL PROGRESS ──────────────────────────────────────────────────────
+function updateAll() {
+  let totalTasks = 0, totalDone = 0;
+
+  for (const [stepId, tasks] of Object.entries(stepTasks)) {
+    const done = tasks.filter(t => state[t]).length;
+    const total = tasks.length;
+    totalTasks += total;
+    totalDone += done;
+
+    // update pill
+    const pill = document.getElementById(`pill-${stepId}`);
+    if (pill) {
+      pill.textContent = `${done} / ${total}`;
+      pill.className = 'step-progress-pill' + (done === total ? ' done' : done > 0 ? ' partial' : '');
+    }
+
+    // update nav
+    const navStep = document.querySelector(`[data-step="${stepId.replace('step','')}"]`);
+    if (navStep) {
+      const num = navStep.querySelector('.nav-step-num');
+      navStep.classList.remove('done','partial');
+      if (done === total) {
+        navStep.classList.add('done');
+        if (num) num.textContent = '✓';
+      } else if (done > 0) {
+        navStep.classList.add('partial');
+        if (num) num.textContent = stepId.replace('step','');
+      } else {
+        if (num) num.textContent = stepId.replace('step','');
+      }
+
+      const prog = document.getElementById(`nav-prog-${stepId.replace('step','')}`);
+      if (prog) prog.textContent = done === total ? '' : `${done}/${total}`;
+    }
+  }
+
+  // overall progress
+  const pct = totalTasks > 0 ? Math.round((totalDone / totalTasks) * 100) : 0;
+  document.getElementById('overallBar').style.width = pct + '%';
+  document.getElementById('overallCount').textContent = `${totalDone} / ${totalTasks}`;
+
+  // all done banner
+  document.getElementById('allDoneBanner').style.display = (totalDone === totalTasks && totalTasks > 0) ? 'block' : 'none';
+}
+
+// ── APPLY SAVED STATE ────────────────────────────────────────────────────────
+function applyState() {
+  document.querySelectorAll('.task-item[data-id]').forEach(el => {
+    if (state[el.dataset.id]) {
+      el.classList.add('checked');
+    }
+  });
+  updateAll();
+}
+
+// ── RESET ALL ────────────────────────────────────────────────────────────────
+function resetAll() {
+  if (!confirm('Reset all checkboxes? This can\'t be undone.')) return;
+  state = {};
+  saveState(state);
+  document.querySelectorAll('.task-item.checked').forEach(el => el.classList.remove('checked'));
+  updateAll();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+applyState();
+
+// Open first step by default
+document.getElementById('step1').classList.add('open');
+</script>
+</body>
+</html>
