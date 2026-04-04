@@ -878,12 +878,34 @@
   let postSteps = [];
   let postTimers = []; // one timer per post
 
+  const SERVER = 'http://localhost:3001';
+
+  async function callServer(endpoint, method='POST', body=null) {
+    try {
+      const res = await fetch(`${SERVER}${endpoint}`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : null
+      });
+      return await res.json();
+    } catch (err) {
+      console.warn('Server unreachable:', err);
+      return null;
+    }
+  }
+
   function startRun() {
     if (isRunning) return;
     batchTotal = Math.max(1, Math.min(10, parseInt(document.getElementById('batchNum').value)||1));
     batchRemaining = batchTotal;
     isRunning = true;
     agentStep = 0;
+
+    // Fire real pipeline command
+    callServer('/run-pipeline', 'POST', { posts: batchTotal }).then(res => {
+      if (res) console.log('Pipeline started:', res);
+      else toast('⚠️ Could not reach local server — running in simulation mode.');
+    });
 
     // Each post gets its own step counter, starting staggered
     postSteps = Array.from({length: batchTotal}, (_, i) => -i);
@@ -1037,6 +1059,8 @@
   function stopRun() {
     if (!isRunning) return;
     isRunning = false;
+    // Tell server to stop
+    callServer('/stop', 'POST');
     postTimers.forEach(t => clearTimeout(t));
     postTimers = [];
     renderAgents();
@@ -1192,6 +1216,11 @@
     agentStep = 0;
     postSteps = [0];
     postTimers = [];
+
+    // Fire real pipeline command with topic
+    callServer('/run-pipeline', 'POST', { posts: 1, topic: title }).then(res => {
+      if (!res) toast('⚠️ Could not reach local server — running in simulation mode.');
+    });
 
     document.getElementById('runBtn').style.display = 'none';
     document.getElementById('stopBtn').style.display = 'inline-flex';
