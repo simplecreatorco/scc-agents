@@ -926,10 +926,67 @@
       renderParallelTracker();
     }
 
-    // Kick off each post on its own independent timer
+    // Start real status poller — overrides simulation if server responds
+    startStatusPoller();
+
+    // Kick off simulation as fallback (poller will take over if server is live)
     for (let i = 0; i < batchTotal; i++) {
       schedulePostStep(i);
     }
+  }
+
+  // ── REAL STATUS POLLER ──
+  let statusPoller = null;
+  let serverConnected = false;
+
+  function startStatusPoller() {
+    stopStatusPoller();
+    statusPoller = setInterval(async () => {
+      const status = await callServer('/status', 'GET');
+      if (!status) return; // server unreachable — simulation runs instead
+
+      serverConnected = true;
+
+      // Kill simulation timers — real data takes over
+      postTimers.forEach(t => clearTimeout(t));
+      postTimers = [];
+
+      if (status.phase === 'preflight') {
+        document.getElementById('progressBar').style.width = '5%';
+        document.getElementById('progressLabel').textContent = 'Pre-flight checks…';
+        renderAgents(); // all idle during preflight
+
+      } else if (status.phase === 'running' && status.currentAgent !== null) {
+        const agentIndex = status.currentAgent - 1; // server is 1-indexed
+        const pct = Math.round((agentIndex / AGENTS.length) * 100);
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('progressLabel').textContent =
+          `Agent ${status.currentAgent} of 9: ${status.currentAgentName || AGENTS[agentIndex]?.name || ''}` +
+          (status.elapsed ? ` · ${status.elapsed}` : '');
+        // Drive agent list from real data
+        postSteps = [agentIndex];
+        refreshUI();
+
+      } else if (status.phase === 'complete' || status.done === true) {
+        stopStatusPoller();
+        // Update draft URLs if server returned them
+        if (status.draftUrls && status.draftUrls.length) {
+          status.draftUrls.forEach((url, i) => {
+            addLog({ type:'success', text:`Draft ${i+1} ready in WordPress.`, time:nowStr(), link:'View Draft in WordPress', url });
+          });
+        }
+        finishRun();
+
+      } else if (status.running === false && !status.done) {
+        // Idle — run may have been stopped externally
+        stopStatusPoller();
+        if (isRunning) finishRun();
+      }
+    }, 2000);
+  }
+
+  function stopStatusPoller() {
+    if (statusPoller) { clearInterval(statusPoller); statusPoller = null; }
   }
 
   function schedulePostStep(postIndex) {
@@ -1029,6 +1086,7 @@
 
   function finishRun() {
     isRunning = false;
+    stopStatusPoller();
     // Reset brainstorm active state (done marking handled in startIdeaPipeline interval)
     activeIdeaIndex = null;
     if (currentIdeas.length) renderIdeaList(currentIdeas);
@@ -1059,7 +1117,7 @@
   function stopRun() {
     if (!isRunning) return;
     isRunning = false;
-    // Tell server to stop
+    stopStatusPoller();
     callServer('/stop', 'POST');
     postTimers.forEach(t => clearTimeout(t));
     postTimers = [];
@@ -1087,7 +1145,11 @@
     document.getElementById('logList').innerHTML = runLog.map(e => `
       <div class="log-entry">
         <div class="log-dot log-dot-${e.type==='success'?'green':e.type==='warn'?'yellow':'coral'}"></div>
-        <div class="log-text">${e.text}${e.link?`<a class="log-link" onclick="toast('Redirecting to WordPress...')">${e.link} →</a>`:''}</div>
+        <div class="log-text">${e.text}${e.link
+          ? e.url
+            ? `<a class="log-link" href="${e.url}" target="_blank">${e.link} →</a>`
+            : `<a class="log-link" onclick="toast('Connect WordPress to see your draft URL.')">${e.link} →</a>`
+          : ''}</div>
         <div class="log-time">${e.time}</div>
       </div>`).join('');
   }
