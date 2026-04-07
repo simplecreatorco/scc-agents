@@ -497,6 +497,43 @@
 
   .pt-status.done-text { color: #5A8A5A; opacity: 1; }
 
+  /* STUCK WARNING */
+  .stuck-warning {
+    display: none;
+    background: #FFF8EC;
+    border: 2px solid #F3B548;
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .stuck-warning.show { display: block; }
+  .stuck-header {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: 15px; color: #8A6200; margin-bottom: 6px;
+  }
+  .stuck-body {
+    font-size: 12px; color: #7A5800; line-height: 1.6; margin-bottom: 12px;
+  }
+  .stuck-cmd {
+    background: #2D3F43; color: #E8F0F2;
+    font-family: monospace; font-size: 12px;
+    padding: 10px 14px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 8px;
+  }
+  .stuck-cmd span { flex: 1; word-break: break-all; }
+  .copy-btn {
+    background: var(--yellow); color: #fff;
+    border: none; border-radius: 6px;
+    font-family: 'Quick', sans-serif; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 2px;
+    padding: 5px 10px; cursor: pointer; flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .copy-btn:hover { opacity: 0.85; }
+  .copy-btn.copied { background: #7BC47A; }
+
   /* TOAST */
   .toast {
     position: fixed; bottom: 28px; left: 50%;
@@ -657,6 +694,23 @@
         <div id="parallelTracker" class="parallel-tracker" style="display:none;"></div>
       </div>
 
+      <!-- STUCK WARNING -->
+      <div class="stuck-warning" id="stuckWarning">
+        <div class="stuck-header">⚠️ Agent <span id="stuckAgentName"></span> might be stuck</div>
+        <div class="stuck-body">
+          It's been running longer than expected. The pipeline may be waiting for input or hit an error.
+          Open Terminal and run one of these to see what's happening:
+        </div>
+        <div class="stuck-cmd">
+          <span>tail -f ~/Documents/scc-blog-pipeline/logs/bridge.log</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'tail -f ~/Documents/scc-blog-pipeline/logs/bridge.log')">Copy</button>
+        </div>
+        <div class="stuck-cmd">
+          <span>watch -n 2 cat ~/Documents/scc-blog-pipeline/logs/pipeline-status.json</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'watch -n 2 cat ~/Documents/scc-blog-pipeline/logs/pipeline-status.json')">Copy</button>
+        </div>
+      </div>
+
       <div class="section-sub" style="margin-top:4px;">The 9 Agents</div>
       <div id="agentList"></div>
 
@@ -747,7 +801,7 @@
         <div class="freshness-icon">🔎</div>
         <div class="freshness-title">Monthly Content Audit</div>
         <div class="freshness-sub">Suggested: first Sunday of each month</div>
-        <button class="btn-primary" onclick="toast('Freshness audit runs via /run-freshness-audit in Claude Code.')">Run Monthly Audit</button>
+        <button class="btn-primary" onclick="triggerFreshness()">Run Monthly Audit</button>
       </div>
       <div class="section-sub" style="margin-top:28px;">What gets checked</div>
       <div style="font-size:13px;color:var(--body);opacity:0.8;line-height:2;">
@@ -878,7 +932,7 @@
   let postSteps = [];
   let postTimers = []; // one timer per post
 
-  const SERVER = 'http://localhost:3001';
+  const SERVER = 'http://localhost:3333';
 
   async function callServer(endpoint, method='POST', body=null) {
     try {
@@ -928,6 +982,8 @@
 
     // Start real status poller — overrides simulation if server responds
     startStatusPoller();
+    // Start stuck watcher for Agent 1
+    startStuckWatcher(0);
 
     // Kick off simulation as fallback (poller will take over if server is live)
     for (let i = 0; i < batchTotal; i++) {
@@ -966,6 +1022,10 @@
         // Drive agent list from real data
         postSteps = [agentIndex];
         refreshUI();
+        // Reset stuck watcher whenever agent advances
+        if (lastKnownAgent !== agentIndex) {
+          startStuckWatcher(agentIndex);
+        }
 
       } else if (status.phase === 'complete' || status.done === true) {
         stopStatusPoller();
@@ -982,7 +1042,7 @@
         stopStatusPoller();
         if (isRunning) finishRun();
       }
-    }, 2000);
+    }, 3000);
   }
 
   function stopStatusPoller() {
@@ -1087,6 +1147,7 @@
   function finishRun() {
     isRunning = false;
     stopStatusPoller();
+    clearStuckWatcher();
     // Reset brainstorm active state (done marking handled in startIdeaPipeline interval)
     activeIdeaIndex = null;
     if (currentIdeas.length) renderIdeaList(currentIdeas);
@@ -1118,6 +1179,7 @@
     if (!isRunning) return;
     isRunning = false;
     stopStatusPoller();
+    clearStuckWatcher();
     callServer('/stop', 'POST');
     postTimers.forEach(t => clearTimeout(t));
     postTimers = [];
@@ -1202,7 +1264,14 @@
   function triggerWrite() {
     const val = document.getElementById('writeInput').value.trim();
     if (!val) { toast('Type a topic first.'); return; }
-    toast(`Post request sent — Agents 3–9 will run for: "${val.slice(0,45)}${val.length>45?'…':''}"`);
+    toast(`Sending to pipeline: "${val.slice(0,45)}${val.length>45?'…':''}"`);
+    callServer('/run-pipeline', 'POST', { posts: 1, topic: val }).then(res => {
+      if (res && res.status === 'started') {
+        toast(`Pipeline started — check Claude Code for progress.`);
+      } else if (!res) {
+        toast('Could not reach local server — is the bridge running?');
+      }
+    });
   }
 
   // ── BRAINSTORM QUEUE ──
@@ -1389,7 +1458,124 @@
     setTimeout(()=>el.classList.remove('show'), 3200);
   }
 
+  function triggerFreshness() {
+    toast('Sending freshness audit request…');
+    callServer('/run-freshness-audit', 'POST').then(res => {
+      if (res && res.status === 'started') {
+        toast('Freshness audit started — check Claude Code for progress.');
+      } else if (!res) {
+        toast('Could not reach local server — is the bridge running?');
+      }
+    });
+  }
+
+  // ── AGENT TIMEOUT THRESHOLDS (minutes) ──
+  const AGENT_TIMEOUTS = [5, 15, 15, 5, 5, 20, 15, 5, 5]; // 1-indexed agents 1-9
+  let stuckTimer = null;
+  let currentAgentStartTime = null;
+  let lastKnownAgent = null;
+
+  function startStuckWatcher(agentIndex) {
+    clearStuckWatcher();
+    const agentNum = agentIndex + 1; // convert to 1-indexed
+    const timeoutMins = AGENT_TIMEOUTS[agentIndex] || 10;
+    currentAgentStartTime = Date.now();
+    lastKnownAgent = agentIndex;
+
+    stuckTimer = setTimeout(() => {
+      // Still on same agent after timeout — show warning
+      if (isRunning && lastKnownAgent === agentIndex) {
+        const name = AGENTS[agentIndex]?.name || `Agent ${agentNum}`;
+        document.getElementById('stuckAgentName').textContent = name;
+        document.getElementById('stuckWarning').classList.add('show');
+      }
+    }, timeoutMins * 60 * 1000);
+  }
+
+  function clearStuckWatcher() {
+    if (stuckTimer) { clearTimeout(stuckTimer); stuckTimer = null; }
+    document.getElementById('stuckWarning').classList.remove('show');
+  }
+
+  function copyCmd(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── PASSIVE POLLER (picks up scheduled runs or runs started externally) ──
+  // Runs always in the background, every 5s, even when dashboard thinks it's idle.
+  // If it detects a live run, it kicks the dashboard into active mode automatically.
+  let passivePoller = null;
+
+  function startPassivePoller() {
+    passivePoller = setInterval(async () => {
+      if (isRunning) return; // active poller already handling it
+      const status = await callServer('/status', 'GET');
+      if (!status) return;
+
+      if ((status.phase === 'running') && status.currentAgent > 0) {
+        // A run is in progress that the dashboard doesn't know about — wake it up
+        batchTotal = 1;
+        batchRemaining = 1;
+        isRunning = true;
+        agentStep = 0;
+        postSteps = [status.currentAgent - 1];
+        postTimers = [];
+
+        document.getElementById('runBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'inline-flex';
+        document.getElementById('progressSection').style.display = 'block';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('progressBar').style.background = 'var(--yellow)';
+        document.getElementById('parallelTracker').style.display = 'none';
+        document.getElementById('aeoBadge').textContent = 'Running';
+        document.getElementById('aeoBadge').className = 'badge badge-running';
+        document.getElementById('globalDot').className = 'pulse-dot running';
+        document.getElementById('globalStatus').textContent = 'Pipeline Running';
+
+        // Open the panel so Rebecca can see progress
+        openPanel();
+        toast('Pipeline is running — picked up live status.');
+
+        // Hand off to the active poller
+        startStatusPoller();
+      }
+    }, 5000);
+  }
+
   renderAgents();
+  startPassivePoller();
+
+  // ── IMMEDIATE BOOT CHECK ──
+  // On page load, check status once right away so dashboard
+  // reflects reality instantly (don't wait 5s for first passive poll)
+  (async () => {
+    const status = await callServer('/status', 'GET');
+    if (!status) return;
+    if (status.phase === 'running' && status.currentAgent > 0) {
+      batchTotal = 1; batchRemaining = 1; isRunning = true;
+      agentStep = 0;
+      postSteps = [status.currentAgent - 1];
+      postTimers = [];
+      document.getElementById('runBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'inline-flex';
+      document.getElementById('progressSection').style.display = 'block';
+      document.getElementById('progressBar').style.width = Math.round(((status.currentAgent-1)/9)*100) + '%';
+      document.getElementById('progressBar').style.background = 'var(--yellow)';
+      document.getElementById('parallelTracker').style.display = 'none';
+      document.getElementById('aeoBadge').textContent = 'Running';
+      document.getElementById('aeoBadge').className = 'badge badge-running';
+      document.getElementById('globalDot').className = 'pulse-dot running';
+      document.getElementById('globalStatus').textContent = 'Pipeline Running';
+      document.getElementById('progressLabel').textContent =
+        `Agent ${status.currentAgent} of 9: ${status.currentAgentName || ''}`;
+      renderAgents(status.currentAgent - 1);
+      startStatusPoller();
+    }
+  })();
 </script>
 </body>
 </html>
