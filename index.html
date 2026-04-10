@@ -1009,12 +1009,13 @@
     return result;
   }
 
-  // Initial Firebase load
-  const firebaseReady = await initFirebase();
-  if (!firebaseReady) {
-    showFbBanner('Could not connect — retrying automatically…');
-    startFbRetry();
-  }
+  // Kick off Firebase in the background — never blocks the rest of the script
+  initFirebase().then(ok => {
+    if (!ok) {
+      showFbBanner('Could not connect — retrying automatically…');
+      startFbRetry();
+    }
+  });
 
 
   const AGENTS = [
@@ -1448,18 +1449,6 @@
   // ── BRAINSTORM QUEUE ──
   let brainstormQueue  = [];   // [{title, index}]
   let activeIdeaIndex  = null; // which idea is currently running
-
-  function runBrainstorm() {
-    const theme = document.getElementById('brainstormInput').value.trim();
-    const count = Math.min(20, Math.max(1, parseInt(document.getElementById('ideaCount').value)||10));
-    if (!theme) { toast('Add a theme first.'); return; }
-    brainstormQueue = [];
-    activeIdeaIndex = null;
-    document.getElementById('queueSection').style.display = 'none';
-    const ideas = SAMPLE_IDEAS.slice(0, count);
-    renderIdeaList(ideas);
-    toast(`${ideas.length} ideas generated for "${theme}"`);
-  }
 
   let doneIdeaIndices = new Set();
 
