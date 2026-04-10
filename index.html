@@ -1387,9 +1387,11 @@
 
   async function saveSchedule() {
     const days = [...document.querySelectorAll('#dayToggles .day-toggle.on')].map(d=>d.textContent);
+    console.log('[saveSchedule] days:', days);
     if (!days.length) { toast('Pick at least one day.'); return; }
     const time  = document.getElementById('scheduleTime').value;
     const batch = document.getElementById('scheduleBatch').value || 1;
+    console.log('[saveSchedule] time:', time, 'batch:', batch);
 
     // Populate saved display
     const savedDays = document.getElementById('savedDayDisplay');
@@ -1410,7 +1412,9 @@
 
     // Persist to Firebase
     const posts = parseInt(batch) || 1;
-    await fbSet('schedule', { days, time, posts, savedAt: new Date().toISOString() });
+    console.log('[saveSchedule] calling fbSet with:', { days, time, posts });
+    const result = await fbSet('schedule', { days, time, posts, savedAt: new Date().toISOString() });
+    console.log('[saveSchedule] fbSet result:', result);
 
     // Push to bridge server — completely fire and forget, never awaited
     fetch('http://localhost:3001/schedule', {
@@ -1644,8 +1648,10 @@
 
   // ── PERSISTENCE LOADERS ──
   async function loadSchedule() {
+    console.log('[loadSchedule] fetching from Firebase…');
     const schedule = await fbGet('schedule');
-    if (!schedule) return;
+    console.log('[loadSchedule] got:', schedule);
+    if (!schedule) { console.log('[loadSchedule] nothing saved, skipping.'); return; }
 
     // Restore day toggles
     document.querySelectorAll('#dayToggles .day-toggle').forEach(el => {
