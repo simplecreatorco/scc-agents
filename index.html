@@ -1727,6 +1727,46 @@
     ]);
   }
 
+  // ── BOOT STATUS CHECK ──
+  // Called on page load — if the pipeline is already running (e.g. triggered from Terminal
+  // or a previous session), resume the UI without needing a button click.
+  async function bootStatusCheck() {
+    const status = await callServer('/status', 'GET');
+    if (!status) return; // server not reachable — nothing to resume
+
+    if (status.phase === 'preflight' || (status.phase === 'running' && status.currentAgent !== null) || status.running === true) {
+      // Pipeline is live — resume UI state
+      isRunning = true;
+      batchTotal = status.totalPosts || 1;
+      batchRemaining = batchTotal;
+      postSteps = Array.from({ length: batchTotal }, () => 0);
+
+      document.getElementById('runBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'inline-flex';
+      document.getElementById('progressSection').style.display = 'block';
+      document.getElementById('progressBar').style.width = '5%';
+      document.getElementById('progressBar').style.background = 'var(--yellow)';
+      document.getElementById('progressLabel').textContent = 'Resuming pipeline status…';
+      document.getElementById('aeoBadge').textContent = 'Running';
+      document.getElementById('aeoBadge').className = 'badge badge-running';
+      document.getElementById('globalDot').className = 'pulse-dot running';
+      document.getElementById('globalStatus').textContent = 'Pipeline Running';
+
+      // Open the panel to the Run tab so she can see agent progress
+      document.getElementById('overlay').classList.add('open');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const runTab = document.querySelector('.tab[onclick*="run"]');
+      if (runTab) runTab.classList.add('active');
+      const runPane = document.getElementById('tab-run');
+      if (runPane) runPane.classList.add('active');
+      renderAgents();
+
+      // Start polling — real status will take over from here
+      startStatusPoller();
+    }
+  }
+
   // ── BOOT SEQUENCE ──
   async function bootApp(email) {
     // Dismiss login screen IMMEDIATELY — don't wait for Firebase
@@ -1741,6 +1781,9 @@
 
     // Render agents right away so the dashboard is live
     renderAgents();
+
+    // Check if pipeline is already running (e.g. triggered externally or page was refreshed mid-run)
+    bootStatusCheck();
 
     // Wait for Firebase to finish connecting, THEN load persisted data
     await firebaseReadyPromise;
