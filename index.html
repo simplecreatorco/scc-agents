@@ -1245,7 +1245,7 @@
       })();
       const allDone = postSteps.every(s => s >= AGENTS.length);
       if (!allDone) {
-        addLog({ type:'success', text:`Draft #${totalPosts} queued in WordPress.`, time:nowStr(), link:'View Draft' });
+        addLog({ type:'success', text:`Draft #${totalPosts} queued in WordPress.`, time:nowStr(), link:'View Draft', ts:Date.now() });
       }
       if (allDone) {
         finishRun();
@@ -1332,7 +1332,7 @@
     document.getElementById('aeoLastRun').textContent = 'Last run: ' + now;
     document.getElementById('statLastRun').textContent = now.split(' ')[0];
     document.getElementById('statLastDesc').textContent = 'Today';
-    addLog({ type:'success', text:`${batchTotal > 1 ? batchTotal + ' drafts' : 'Draft #' + totalPosts} ready in WordPress. Review and publish when ready.`, time:now, link: batchTotal > 1 ? 'View All Drafts in WordPress' : 'View Draft in WordPress' });
+    addLog({ type:'success', text:`${batchTotal > 1 ? batchTotal + ' drafts' : 'Draft #' + totalPosts} ready in WordPress. Review and publish when ready.`, time:now, link: batchTotal > 1 ? 'View All Drafts in WordPress' : 'View Draft in WordPress', ts:Date.now() });
     renderAgents();
     setTimeout(() => {
       document.getElementById('progressSection').style.display = 'none';
@@ -1367,6 +1367,8 @@
     document.getElementById('milestonebar').style.width = Math.min(100, Math.round((totalPosts/200)*100)) + '%';
   }
 
+  const WP_DRAFTS_URL = 'https://thesimplecreator.com/wp-admin/edit.php?post_status=draft&post_type=post';
+
   function addLog(e) {
     runLog.unshift(e);
     fbSet('runlog', runLog.slice(0, 40)); // fire and forget
@@ -1374,9 +1376,7 @@
       <div class="log-entry">
         <div class="log-dot log-dot-${e.type==='success'?'green':e.type==='warn'?'yellow':'coral'}"></div>
         <div class="log-text">${e.text}${e.link
-          ? e.url
-            ? `<a class="log-link" href="${e.url}" target="_blank">${e.link} →</a>`
-            : `<a class="log-link" onclick="toast('Connect WordPress to see your draft URL.')">${e.link} →</a>`
+          ? `<a class="log-link" href="${e.url || WP_DRAFTS_URL}" target="_blank">${e.link} →</a>`
           : ''}</div>
         <div class="log-time">${e.time}</div>
       </div>`).join('');
@@ -1692,25 +1692,32 @@
       <div class="log-entry">
         <div class="log-dot log-dot-${e.type==='success'?'green':e.type==='warn'?'yellow':'coral'}"></div>
         <div class="log-text">${e.text}${e.link
-          ? e.url
-            ? `<a class="log-link" href="${e.url}" target="_blank">${e.link} →</a>`
-            : `<a class="log-link" onclick="toast('Connect WordPress to see your draft URL.')">${e.link} →</a>`
+          ? `<a class="log-link" href="${e.url || WP_DRAFTS_URL}" target="_blank">${e.link} →</a>`
           : ''}</div>
         <div class="log-time">${e.time}</div>
       </div>`).join('');
   }
 
   async function loadStats() {
-    const stats = await fbGet('stats');
-    if (!stats) return;
+    const [stats, log] = await Promise.all([fbGet('stats'), fbGet('runlog')]);
 
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    draftsWeek = (stats.weekEntries || []).filter(t => t > weekAgo).length;
-    totalPosts = stats.total || 0;
+
+    // Derive totalPosts by counting all success entries in the run log —
+    // this is the most reliable source since the run log was always persisted.
+    const successEntries = (log || []).filter(e => e.type === 'success');
+    totalPosts = successEntries.length;
+
+    // Drafts this week: use ts timestamps added to new entries.
+    // For old entries without ts, fall back to stats.weekEntries.
+    const weekFromLog = successEntries.filter(e => e.ts && e.ts > weekAgo).length;
+    const weekFromStats = (stats && stats.weekEntries) ? stats.weekEntries.filter(t => t > weekAgo).length : 0;
+    // If none of the entries have ts yet, assume all are recent (small early log)
+    draftsWeek = weekFromLog > 0 ? weekFromLog : (weekFromStats > 0 ? weekFromStats : totalPosts);
+
     updateCounts();
 
     // Restore Last Run display if run log has entries
-    const log = await fbGet('runlog');
     if (log && log.length) {
       const lastTime = log[0].time || '';
       document.getElementById('statLastRun').textContent  = lastTime.split(' ')[0] || '—';
