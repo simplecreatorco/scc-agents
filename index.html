@@ -8,1574 +8,1087 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/quick" rel="stylesheet">
+
+<!-- Firebase loaded as ES module after DOM ready -->
+
 <style>
-  :root {
-    --blue:   #889CA2;
-    --coral:  #F49C8E;
-    --yellow: #F3B548;
-    --sage:   #BFD9CC;
-    --blush:  #F6D5CD;
-    --mist:   #B3DCDA;
-    --bg:     #F2F2F2;
-    --white:  #FFFFFF;
-    --body:   #555555;
-  }
+:root {
+  --blue:   #889CA2;
+  --coral:  #F49C8E;
+  --yellow: #F3B548;
+  --sage:   #BFD9CC;
+  --blush:  #F6D5CD;
+  --mist:   #B3DCDA;
+  --bg:     #F2F2F2;
+  --white:  #FFFFFF;
+  --body:   #555555;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  font-family: 'Nunito', sans-serif;
+  color: var(--body);
+  line-height: 1.75;
+  min-height: 100vh;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── LOGIN ── */
+#login-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+  transition: opacity 0.35s ease;
+}
+#login-screen.fade-out { opacity: 0; pointer-events: none; }
+#login-screen.gone { display: none; }
 
-  body {
-    background: var(--bg);
-    font-family: 'Nunito', sans-serif;
-    color: var(--body);
-    line-height: 1.75;
-    min-height: 100vh;
-  }
+.login-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 56px 52px 48px;
+  max-width: 440px; width: calc(100% - 48px);
+  text-align: center;
+}
+.login-mark {
+  width: 54px; height: 54px; border-radius: 14px;
+  background: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 28px;
+}
+.login-mark svg { width: 26px; height: 26px; fill: #fff; }
+.login-eyebrow {
+  font-family: 'Quick', sans-serif;
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 3px; color: var(--coral); margin-bottom: 8px;
+}
+.login-title {
+  font-family: 'Fraunces', serif; font-weight: 900;
+  font-size: 38px; text-transform: uppercase;
+  color: var(--blue); letter-spacing: -1px; line-height: 1.0;
+  margin-bottom: 10px;
+}
+.login-sub {
+  font-size: 14px; color: var(--body); opacity: 0.6;
+  margin-bottom: 32px; line-height: 1.65;
+}
+.login-input {
+  width: 100%;
+  border: 2px solid var(--bg); border-radius: 12px;
+  padding: 15px 18px;
+  font-family: 'Nunito', sans-serif; font-size: 15px; color: var(--body);
+  background: var(--bg); outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 12px;
+}
+.login-input:focus { border-color: var(--blue); background: var(--white); }
+.login-input::placeholder { opacity: 0.4; }
+.login-btn {
+  width: 100%;
+  background: var(--yellow); color: #fff;
+  font-family: 'Quick', sans-serif;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 3px;
+  padding: 17px; border: none; border-radius: 50px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.login-btn:hover { opacity: 0.88; }
+.login-btn:disabled { opacity: 0.45; cursor: default; }
+.login-error { font-size: 13px; color: var(--coral); margin-top: 12px; min-height: 18px; }
+.login-note { font-size: 12px; color: var(--body); opacity: 0.38; margin-top: 18px; line-height: 1.6; }
 
-  /* ── HEADER ── */
-  .header {
-    background: var(--white);
-    padding: 26px 48px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid var(--bg);
-  }
-  .header-eyebrow {
-    font-family: 'Quick', sans-serif;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: var(--coral);
-    margin-bottom: 4px;
-  }
-  .header-title {
-    font-family: 'Fraunces', serif;
-    font-weight: 900;
-    font-size: 28px;
-    text-transform: uppercase;
-    color: var(--blue);
-    letter-spacing: -1px;
-    line-height: 1.0;
-  }
-  .header-right { display: flex; align-items: center; gap: 10px; }
-  .pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: #D4DDE0; }
-  .pulse-dot.live { background: #7BC47A; animation: pulse 2s infinite; }
-  .pulse-dot.running { background: #7BC47A; animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .header-status {
-    font-family: 'Quick', sans-serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--blue);
-  }
+/* ── APP ── */
+#app { display: none; min-height: 100vh; }
+#app.visible { display: block; }
 
-  /* ── PAGE ── */
-  .page { max-width: 1200px; margin: 0 auto; padding: 40px 40px; }
+/* ── HEADER ── */
+.header {
+  background: var(--white);
+  padding: 22px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 2px solid var(--bg);
+  flex-wrap: wrap; gap: 12px;
+}
+.header-eyebrow {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 3px;
+  color: var(--coral); margin-bottom: 2px;
+}
+.header-title {
+  font-family: 'Fraunces', serif; font-weight: 900;
+  font-size: 26px; text-transform: uppercase;
+  color: var(--blue); letter-spacing: -1px; line-height: 1.0;
+}
+.header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.status-badge { display: flex; align-items: center; gap: 7px; }
+.status-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: #ccc; flex-shrink: 0;
+}
+.status-dot.online  { background: #7BC47A; animation: blink 2.5s infinite; }
+.status-dot.running { background: var(--yellow); animation: blink 1s infinite; }
+.status-lbl {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px; color: var(--blue);
+}
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg); border-radius: 50px; padding: 8px 16px;
+}
+.user-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sage); }
+.user-email-lbl {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px; color: var(--blue);
+}
+.logout-btn {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--body); opacity: 0.35;
+  background: none; border: none; cursor: pointer; transition: opacity 0.2s;
+}
+.logout-btn:hover { opacity: 0.7; }
 
-  /* ── STATS ROW ── */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 18px;
-    margin-bottom: 36px;
-  }
-  .stat-card { background: var(--white); border-radius: 16px; padding: 26px 26px 22px; }
-  .stat-label {
-    font-family: 'Quick', sans-serif;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: var(--coral);
-    margin-bottom: 8px;
-  }
-  .stat-num {
-    font-family: 'Fraunces', serif;
-    font-weight: 900;
-    font-size: 40px;
-    color: var(--blue);
-    letter-spacing: -2px;
-    line-height: 1;
-  }
-  .stat-desc { font-size: 12px; color: var(--body); margin-top: 5px; opacity: 0.7; }
+/* ── TABS ── */
+.tabs-bar {
+  background: var(--white); border-bottom: 2px solid var(--bg);
+  padding: 0 48px; display: flex; gap: 0; overflow-x: auto;
+}
+.tab-btn {
+  font-family: 'Quick', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px;
+  color: var(--body); opacity: 0.4;
+  padding: 17px 22px 15px; border: none; background: none; cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  transition: opacity 0.2s, border-color 0.2s, color 0.2s; white-space: nowrap;
+}
+.tab-btn:hover { opacity: 0.7; }
+.tab-btn.active { opacity: 1; color: var(--blue); border-bottom-color: var(--blue); }
 
-  /* ── SECTION LABEL ── */
-  .section-label {
-    font-family: 'Quick', sans-serif;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: var(--coral);
-    margin-bottom: 14px;
-  }
+/* ── PAGE ── */
+.page-wrap { padding: 36px 48px; }
+.panel { display: none; }
+.panel.active { display: block; }
 
-  /* ── TEAMS GRID ── */
-  .teams-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin-bottom: 36px; }
+/* ── STATS ── */
+.stat-row { display: flex; gap: 18px; margin-bottom: 28px; flex-wrap: wrap; }
+.stat-card {
+  background: var(--white); border-radius: 16px;
+  padding: 22px 26px; flex: 1; min-width: 140px;
+}
+.stat-label {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 3px; color: var(--coral); margin-bottom: 4px;
+}
+.stat-val {
+  font-family: 'Fraunces', serif; font-weight: 900;
+  font-size: 34px; color: var(--blue); letter-spacing: -1px; line-height: 1;
+}
+.stat-sub { font-size: 12px; color: var(--body); opacity: 0.5; margin-top: 3px; }
 
-  .team-card {
-    background: var(--white);
-    border-radius: 20px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.18s ease;
-  }
-  .team-card:hover { transform: translateY(-3px); }
-  .team-card.disabled { cursor: default; opacity: 0.6; }
-  .team-card.disabled:hover { transform: none; }
+/* ── SECTION LABELS ── */
+.sec-eyebrow {
+  font-family: 'Quick', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px; color: var(--coral); margin-bottom: 5px;
+}
+.sec-heading {
+  font-family: 'Fraunces', serif; font-weight: 400;
+  font-size: 22px; color: var(--blue); margin-bottom: 18px;
+}
 
-  .team-card-top { padding: 30px 30px 22px; position: relative; }
-  .accent-bar { position: absolute; top:0;left:0;right:0; height:4px; }
-  .bar-blue   { background: var(--blue); }
-  .bar-sage   { background: var(--sage); }
-  .bar-blush  { background: var(--blush); }
+/* ── PIPELINE BAR ── */
+.pipeline-bar-card {
+  background: var(--white); border-radius: 16px;
+  padding: 20px 24px; margin-bottom: 24px;
+}
+.pb-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.pb-label {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 3px; color: var(--coral);
+}
+.pb-pct {
+  font-family: 'Fraunces', serif; font-weight: 900;
+  font-size: 18px; color: var(--blue); letter-spacing: -1px;
+}
+.pb-track { background: var(--bg); border-radius: 50px; height: 9px; overflow: hidden; }
+.pb-fill {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, var(--sage), var(--mist));
+  transition: width 0.5s ease; width: 0%;
+}
+.pb-agent-label { font-size: 12px; color: var(--body); opacity: 0.55; margin-top: 7px; }
 
-  .team-icon {
-    width: 50px; height: 50px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; margin-bottom: 14px;
-  }
-  .bg-blue   { background: #EEF2F3; }
-  .bg-sage   { background: #EEF6F2; }
-  .bg-blush  { background: #FDF1EF; }
+/* ── RUN CONTROLS ── */
+.run-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--yellow); color: #fff;
+  font-family: 'Quick', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px;
+  padding: 14px 30px; border: none; border-radius: 50px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.38; cursor: default; }
+.btn-stop {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--blush); color: var(--coral);
+  font-family: 'Quick', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px;
+  padding: 14px 24px; border: none; border-radius: 50px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.btn-stop:hover { opacity: 0.8; }
+.batch-group { display: flex; align-items: center; gap: 8px; }
+.batch-lbl {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px; color: var(--body); opacity: 0.55;
+}
+.batch-inp {
+  width: 52px; border: 2px solid var(--bg); border-radius: 10px;
+  padding: 9px 10px; font-family: 'Nunito', sans-serif;
+  font-size: 15px; color: var(--blue); background: var(--bg);
+  text-align: center; outline: none; transition: border-color 0.2s, background 0.2s;
+}
+.batch-inp:focus { border-color: var(--blue); background: var(--white); }
 
-  .team-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: 19px; color: var(--blue); line-height: 1.2; margin-bottom: 6px; }
-  .team-tagline { font-size: 13px; color: var(--body); opacity: 0.72; line-height: 1.5; }
+/* ── AGENTS GRID ── */
+.agents-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px; margin-bottom: 32px;
+}
+.agent-card {
+  background: var(--white); border-radius: 14px; padding: 18px 20px;
+  border-left: 4px solid var(--bg); transition: border-color 0.3s;
+}
+.agent-card.running { border-left-color: var(--yellow); }
+.agent-card.done    { border-left-color: var(--sage); }
+.agent-card.error   { border-left-color: var(--coral); }
+.agent-num {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px; color: var(--body); opacity: 0.38; margin-bottom: 3px;
+}
+.agent-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: 15px; color: var(--blue); margin-bottom: 3px; }
+.agent-role { font-size: 12px; color: var(--body); opacity: 0.65; line-height: 1.5; }
+.agent-status-row { display: flex; align-items: center; gap: 7px; margin-top: 11px; }
+.agent-dot { width: 7px; height: 7px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
+.agent-dot.running { background: var(--yellow); animation: blink 1s infinite; }
+.agent-dot.done    { background: #7BC47A; }
+.agent-dot.error   { background: var(--coral); }
+.agent-status-txt {
+  font-family: 'Quick', sans-serif; font-size: 9px;
+  text-transform: uppercase; letter-spacing: 2px; color: var(--body); opacity: 0.42;
+}
+.agent-status-txt.running { color: var(--yellow); opacity: 1; }
+.agent-status-txt.done    { color: #7BC47A; opacity: 1; }
+.agent-status-txt.error   { color: var(--coral); opacity: 1; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .team-card-bottom {
-    padding: 16px 30px;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .team-agent-count { font-family: 'Quick', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--coral); }
-  .team-last-run { font-size: 12px; color: var(--body); opacity: 0.6; margin-top: 2px; }
+/* ── LOG ── */
+.log-card { background: var(--white); border-radius: 16px; padding: 22px 24px; }
+.log-list { list-style: none; }
+.log-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid var(--bg); gap: 12px;
+}
+.log-item:last-child { border-bottom: none; }
+.log-title { font-size: 13px; color: var(--body); }
+.log-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.log-date {
+  font-family: 'Quick', sans-serif; font-size: 9px;
+  text-transform: uppercase; letter-spacing: 2px; color: var(--body); opacity: 0.38;
+}
+.log-link {
+  font-family: 'Quick', sans-serif; font-size: 9px;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--blue); text-decoration: none; border-bottom: 1px solid var(--mist); padding-bottom: 1px;
+}
+.log-empty { font-size: 14px; color: var(--body); opacity: 0.4; padding: 8px 0; }
 
-  .badge {
-    font-family: 'Quick', sans-serif;
-    font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
-    padding: 6px 13px; border-radius: 50px;
-  }
-  .badge-idle    { background: #EEF2F3; color: var(--blue); }
-  .badge-running { background: #FFF3D6; color: #B8852A; animation: pulse 1s infinite; }
-  .badge-soon    { background: var(--blush); color: var(--coral); }
+/* ── SCHEDULE ── */
+.schedule-card {
+  background: var(--white); border-radius: 16px;
+  padding: 28px 30px; margin-bottom: 24px; max-width: 660px;
+}
+.schedule-row { display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap; margin-bottom: 24px; }
+.field-group { display: flex; flex-direction: column; gap: 8px; }
+.field-label {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 3px; color: var(--coral);
+}
+.days-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.day-toggle {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px;
+  padding: 9px 14px; border-radius: 50px;
+  border: 2px solid var(--bg); background: var(--bg);
+  color: var(--body); opacity: 0.6;
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.day-toggle.on { background: var(--blue); border-color: var(--blue); color: #fff; opacity: 1; }
+.time-input {
+  border: 2px solid var(--bg); border-radius: 12px;
+  padding: 11px 16px; font-family: 'Nunito', sans-serif;
+  font-size: 15px; color: var(--blue); background: var(--bg);
+  outline: none; transition: border-color 0.2s, background 0.2s; width: 145px;
+}
+.time-input:focus { border-color: var(--blue); background: var(--white); }
+.posts-input {
+  border: 2px solid var(--bg); border-radius: 12px;
+  padding: 11px 16px; font-family: 'Nunito', sans-serif;
+  font-size: 15px; color: var(--blue); background: var(--bg);
+  outline: none; transition: border-color 0.2s, background 0.2s;
+  width: 80px; text-align: center;
+}
+.posts-input:focus { border-color: var(--blue); background: var(--white); }
+.save-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--yellow); color: #fff;
+  font-family: 'Quick', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px;
+  padding: 14px 30px; border: none; border-radius: 50px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.save-btn:hover { opacity: 0.88; }
+.save-btn:disabled { opacity: 0.38; cursor: default; }
+.save-confirm {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: #7BC47A; margin-left: 14px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.save-confirm.show { opacity: 1; }
+.sched-summary {
+  background: var(--bg); border-radius: 12px;
+  padding: 14px 18px; margin-top: 18px;
+  font-size: 13px; color: var(--body); opacity: 0.75; line-height: 1.65;
+}
+.sched-summary strong { color: var(--blue); font-weight: 700; opacity: 1; }
 
-  /* Add team card */
-  .add-card {
-    background: var(--white);
-    border-radius: 20px;
-    border: 2px dashed #D4DDE0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 36px 28px; cursor: pointer;
-    min-height: 210px; gap: 10px;
-    transition: border-color 0.18s, transform 0.18s;
-  }
-  .add-card:hover { border-color: var(--blue); transform: translateY(-3px); }
-  .add-icon { width: 46px; height: 46px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 22px; }
-  .add-label { font-family: 'Fraunces', serif; font-weight: 400; font-size: 16px; color: var(--blue); }
-  .add-sub { font-size: 12px; color: var(--body); opacity: 0.55; text-align: center; }
+/* ── QUEUE ── */
+.queue-input-row { display: flex; gap: 12px; margin-bottom: 18px; max-width: 560px; }
+.queue-input {
+  flex: 1; border: 2px solid var(--bg); border-radius: 12px;
+  padding: 13px 18px; font-family: 'Nunito', sans-serif;
+  font-size: 15px; color: var(--body); background: var(--bg);
+  outline: none; transition: border-color 0.2s, background 0.2s;
+}
+.queue-input:focus { border-color: var(--blue); background: var(--white); }
+.queue-input::placeholder { opacity: 0.4; }
+.btn-add {
+  background: var(--blue); color: #fff;
+  font-family: 'Quick', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px;
+  padding: 0 24px; border: none; border-radius: 50px;
+  cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
+}
+.btn-add:hover { opacity: 0.85; }
+.queue-card { background: var(--white); border-radius: 16px; padding: 8px 6px; }
+.queue-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-radius: 10px; transition: background 0.15s;
+}
+.queue-item:hover { background: var(--bg); }
+.queue-num {
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--body); opacity: 0.35; min-width: 20px;
+}
+.queue-topic { flex: 1; font-size: 14px; color: var(--body); }
+.queue-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--body); opacity: 0.22; font-size: 18px;
+  padding: 2px 6px; border-radius: 6px; transition: opacity 0.2s, color 0.2s;
+}
+.queue-del:hover { opacity: 0.8; color: var(--coral); }
+.queue-empty { font-size: 14px; color: var(--body); opacity: 0.4; padding: 18px; }
 
-  /* ── OVERLAY ── */
-  .overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(100,120,130,0.2);
-    z-index: 100; align-items: flex-start; justify-content: flex-end;
-  }
-  .overlay.open { display: flex; }
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: #2d2d2d; color: #fff;
+  font-family: 'Quick', sans-serif; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2px;
+  padding: 14px 22px; border-radius: 50px;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none; z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
 
-  .panel {
-    background: var(--white);
-    width: 560px; height: 100vh; overflow-y: auto;
-    animation: slideIn 0.22s ease;
-  }
-  @keyframes slideIn { from{transform:translateX(30px);opacity:0} to{transform:translateX(0);opacity:1} }
-
-  .panel-header {
-    padding: 30px 36px 26px;
-    border-bottom: 2px solid var(--bg);
-    position: sticky; top: 0;
-    background: var(--white); z-index: 10;
-    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
-  }
-  .panel-eyebrow { font-family: 'Quick', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--coral); margin-bottom: 4px; }
-  .panel-title { font-family: 'Fraunces', serif; font-weight: 900; font-size: 24px; text-transform: uppercase; color: var(--blue); letter-spacing: -1px; line-height: 1; }
-  .panel-desc { font-size: 13px; color: var(--body); opacity: 0.78; line-height: 1.6; margin-top: 6px; }
-
-  .close-btn {
-    background: var(--bg); border: none; border-radius: 50%;
-    width: 34px; height: 34px; cursor: pointer; font-size: 16px;
-    color: var(--blue); display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; margin-top: 2px;
-  }
-  .close-btn:hover { background: var(--blush); }
-
-  .panel-body { padding: 26px 36px 40px; }
-
-  /* TABS */
-  .tabs { display: flex; gap: 4px; margin-bottom: 26px; border-bottom: 2px solid var(--bg); }
-  .tab {
-    font-family: 'Quick', sans-serif; font-size: 10px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 10px 18px; border: none; background: none;
-    color: var(--body); opacity: 0.5; cursor: pointer;
-    border-bottom: 2px solid transparent; margin-bottom: -2px;
-    transition: all 0.15s;
-  }
-  .tab.active { color: var(--blue); opacity: 1; border-bottom-color: var(--blue); }
-
-  .tab-pane { display: none; }
-  .tab-pane.active { display: block; }
-
-  /* MINI STATS */
-  .mini-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-  .mini-stat { background: var(--bg); border-radius: 12px; padding: 16px 18px; }
-  .mini-label { font-family: 'Quick', sans-serif; font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--coral); margin-bottom: 4px; }
-  .mini-val { font-family: 'Fraunces', serif; font-weight: 900; font-size: 24px; color: var(--blue); letter-spacing: -1px; line-height: 1; }
-
-  /* RUN CONTROLS */
-  .run-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-
-  .btn-primary {
-    background: var(--yellow); color: #fff;
-    font-family: 'Quick', sans-serif; font-size: 11px;
-    text-transform: uppercase; letter-spacing: 3px;
-    padding: 13px 26px; border-radius: 50px; border: none; cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-primary:hover { opacity: 0.88; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-secondary {
-    background: var(--bg); color: var(--blue);
-    font-family: 'Quick', sans-serif; font-size: 11px;
-    text-transform: uppercase; letter-spacing: 3px;
-    padding: 13px 24px; border-radius: 50px; border: none; cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn-secondary:hover { background: #E2EAEC; }
-
-  .batch-wrap { display: flex; align-items: center; gap: 8px; }
-  .batch-label { font-size: 12px; color: var(--body); opacity: 0.7; }
-  .batch-input {
-    width: 54px; padding: 8px 10px;
-    border: 2px solid #D4DDE0; border-radius: 10px;
-    font-family: 'Nunito', sans-serif; font-size: 13px;
-    color: var(--body); text-align: center; background: var(--white);
-  }
-
-  /* PROGRESS */
-  .progress-section { margin-bottom: 22px; }
-  .progress-wrap { background: var(--bg); border-radius: 50px; height: 6px; overflow: hidden; margin-bottom: 7px; }
-  .progress-bar { height: 100%; border-radius: 50px; background: var(--yellow); width: 0%; transition: width 0.5s ease; }
-  .progress-label { font-size: 12px; color: var(--body); opacity: 0.65; }
-
-  /* AGENTS */
-  .section-sub { font-family: 'Quick', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--coral); margin-bottom: 14px; }
-  .agent-row {
-    display: flex; align-items: center; gap: 13px;
-    padding: 13px 0; border-bottom: 1px solid var(--bg);
-  }
-  .agent-row:last-child { border-bottom: none; }
-  .agent-num { font-family: 'Fraunces', serif; font-weight: 900; font-size: 11px; color: var(--blue); opacity: 0.3; width: 18px; text-align: center; flex-shrink: 0; }
-  .agent-icon-sm { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; background: var(--bg); }
-  .agent-info { flex: 1; }
-  .agent-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: 14px; color: var(--blue); line-height: 1.2; }
-  .agent-meta { font-size: 11px; color: var(--body); opacity: 0.55; margin-top: 1px; }
-  .agent-badge { font-family: 'Quick', sans-serif; font-size: 9px; text-transform: uppercase; letter-spacing: 2px; padding: 4px 10px; border-radius: 50px; flex-shrink: 0; }
-  .ab-idle    { background: var(--bg); color: var(--body); }
-  .ab-running { background: #FFF3D6; color: #B8852A; }
-  .ab-waiting { background: var(--blush); color: var(--coral); }
-
-  /* PARALLEL TRACKER */
-  .pt-row {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--bg); border-radius: 10px; padding: 10px 14px;
-  }
-  .pt-label {
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    color: var(--blue); width: 52px; flex-shrink: 0;
-  }
-  .pt-track {
-    flex: 1; display: flex; gap: 3px;
-  }
-  .pt-pip {
-    flex: 1; height: 5px; border-radius: 50px;
-    background: #D4DDE0; transition: background 0.3s;
-  }
-  .pt-pip.done    { background: #7BC47A; }
-  .pt-pip.active  { background: var(--yellow); }
-  .pt-pip.queued  { background: #D4DDE0; }
-  .pt-status {
-    font-size: 11px; color: var(--body); opacity: 0.7;
-    white-space: nowrap; width: 130px; text-align: right; flex-shrink: 0;
-  }
-  .pt-status.done-text { color: #5A8A5A; opacity: 1; font-weight: 700; }
-
-  /* SCHEDULE */
-  .schedule-box { background: var(--bg); border-radius: 16px; padding: 22px 24px; }
-  .schedule-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 15px; color: var(--blue); margin-bottom: 14px; }
-  .day-toggles { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
-  .day-toggle {
-    padding: 6px 13px; border-radius: 50px;
-    border: 2px solid #D4DDE0; background: var(--white);
-    color: var(--body); font-family: 'Quick', sans-serif; font-size: 10px;
-    text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.15s;
-  }
-  .day-toggle.on { background: var(--blue); border-color: var(--blue); color: var(--white); }
-  .time-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .time-row label { font-size: 13px; color: var(--body); opacity: 0.8; }
-  .time-select {
-    background: var(--white); border: 2px solid #D4DDE0;
-    border-radius: 10px; padding: 7px 12px;
-    font-family: 'Nunito', sans-serif; font-size: 13px; color: var(--body); cursor: pointer;
-  }
-
-  /* REQUEST POST */
-  .mode-tabs { display: flex; gap: 6px; margin-bottom: 22px; }
-  .mode-tab {
-    padding: 8px 18px; border-radius: 50px; border: 2px solid #D4DDE0;
-    background: var(--white); font-family: 'Quick', sans-serif; font-size: 10px;
-    text-transform: uppercase; letter-spacing: 2px; color: var(--body); cursor: pointer; transition: all 0.15s;
-  }
-  .mode-tab.active { background: var(--blue); border-color: var(--blue); color: var(--white); }
-
-  .form-label { font-family: 'Quick', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--coral); margin-bottom: 8px; display: block; }
-  .form-input {
-    width: 100%; padding: 12px 16px;
-    border: 2px solid #D4DDE0; border-radius: 12px;
-    font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--body);
-    background: var(--white); margin-bottom: 16px; outline: none;
-    transition: border-color 0.15s;
-  }
-  .form-input:focus { border-color: var(--blue); }
-
-  .partnership-note {
-    background: #FFF8EC; border-radius: 10px; padding: 12px 16px;
-    font-size: 12px; color: #B8852A; margin-bottom: 16px; display: none;
-  }
-  .partnership-note.show { display: block; }
-
-  .idea-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-  .idea-item {
-    background: var(--bg); border-radius: 12px; padding: 14px 16px;
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-  }
-  .idea-text { font-size: 13px; color: var(--body); flex: 1; line-height: 1.5; }
-  .idea-cluster { font-size: 11px; opacity: 0.55; }
-  .idea-write-btn {
-    background: transparent; color: var(--blue);
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 7px 13px; border-radius: 50px;
-    border: 2px solid var(--blue);
-    cursor: pointer; flex-shrink: 0; white-space: nowrap;
-    transition: background 0.15s, color 0.15s;
-  }
-  .idea-write-btn:hover { background: var(--blue); color: #fff; }
-  .idea-queue-btn {
-    background: var(--mist); color: #3A7070;
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 7px 13px; border-radius: 50px; border: none;
-    cursor: pointer; flex-shrink: 0; white-space: nowrap;
-    transition: opacity 0.15s;
-  }
-  .idea-queue-btn:hover { opacity: 0.8; }
-  .idea-inqueue-btn {
-    background: var(--blush); color: var(--coral);
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 7px 13px; border-radius: 50px; border: none;
-    flex-shrink: 0; white-space: nowrap; cursor: default;
-  }
-  .idea-done-btn {
-    background: #E8F5E8; color: #5A8A5A;
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 7px 13px; border-radius: 50px; border: none;
-    flex-shrink: 0; white-space: nowrap; cursor: default;
-  }
-  .idea-running-btn {
-    background: #FFF3D6; color: #B8852A;
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 7px 13px; border-radius: 50px; border: none;
-    flex-shrink: 0; white-space: nowrap; cursor: default;
-  }
-
-  /* QUEUE LIST */
-  .queue-section { margin-top: 20px; }
-  .queue-label { font-family: 'Quick', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--coral); margin-bottom: 10px; }
-  .queue-list { display: flex; flex-direction: column; gap: 8px; }
-  .queue-item {
-    background: var(--white); border-radius: 10px; padding: 11px 14px;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  }
-  .queue-item-num { font-family: 'Fraunces', serif; font-weight: 900; font-size: 11px; color: var(--blue); opacity: 0.35; width: 16px; flex-shrink: 0; }
-  .queue-item-title { font-size: 12px; color: var(--body); flex: 1; line-height: 1.4; }
-  .queue-item-remove { background: none; border: none; font-size: 14px; color: var(--body); opacity: 0.35; cursor: pointer; flex-shrink: 0; line-height: 1; padding: 0 2px; }
-  .queue-item-remove:hover { opacity: 0.7; }
-
-  /* FRESHNESS */
-  .freshness-intro { font-size: 13px; color: var(--body); opacity: 0.8; margin-bottom: 20px; line-height: 1.6; }
-  .freshness-box { background: var(--bg); border-radius: 16px; padding: 28px 24px; text-align: center; }
-  .freshness-icon { font-size: 36px; margin-bottom: 12px; }
-  .freshness-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 17px; color: var(--blue); margin-bottom: 6px; }
-  .freshness-sub { font-size: 13px; color: var(--body); opacity: 0.7; margin-bottom: 18px; }
-
-  /* PROGRESS TAB */
-  .timeline { margin-top: 8px; }
-  .tl-item { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--bg); }
-  .tl-item:last-child { border-bottom: none; }
-  .tl-posts { font-family: 'Fraunces', serif; font-weight: 900; font-size: 13px; color: var(--blue); width: 60px; flex-shrink: 0; padding-top: 2px; }
-  .tl-timeframe { font-family: 'Quick', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--coral); margin-bottom: 2px; }
-  .tl-desc { font-size: 13px; color: var(--body); opacity: 0.8; line-height: 1.5; }
-
-  /* LOG */
-  .log-entry { display: flex; align-items: flex-start; gap: 10px; padding: 13px 0; border-bottom: 1px solid var(--bg); font-size: 13px; }
-  .log-entry:last-child { border-bottom: none; }
-  .log-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-  .log-dot-green  { background: #7BC47A; }
-  .log-dot-yellow { background: var(--yellow); }
-  .log-dot-coral  { background: var(--coral); }
-  .log-text { flex: 1; color: var(--body); line-height: 1.5; }
-  .log-time { font-size: 11px; color: var(--body); opacity: 0.45; white-space: nowrap; }
-  .log-link { color: var(--blue); font-size: 12px; text-decoration: underline; cursor: pointer; display: block; margin-top: 2px; }
-  .log-empty { font-size: 13px; color: var(--body); opacity: 0.4; padding: 18px 0; }
-
-  /* PARALLEL TRACKER */
-  .parallel-tracker { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
-
-  .pt-row {
-    background: var(--bg);
-    border-radius: 12px;
-    padding: 11px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .pt-label {
-    font-family: 'Quick', sans-serif;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--blue);
-    width: 52px;
-    flex-shrink: 0;
-  }
-
-  .pt-track {
-    display: flex;
-    gap: 3px;
-    flex: 1;
-  }
-
-  .pt-pip {
-    height: 6px;
-    flex: 1;
-    border-radius: 50px;
-    background: #D4DDE0;
-    transition: background 0.3s;
-  }
-
-  .pt-pip.done   { background: #7BC47A; }
-  .pt-pip.active { background: var(--yellow); animation: pulse 0.9s infinite; }
-  .pt-pip.queued { background: #D4DDE0; }
-
-  .pt-status {
-    font-size: 11px;
-    color: var(--body);
-    opacity: 0.7;
-    white-space: nowrap;
-    width: 160px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  .pt-status.done-text { color: #5A8A5A; opacity: 1; }
-
-  /* STUCK WARNING */
-  .stuck-warning {
-    display: none;
-    background: #FFF8EC;
-    border: 2px solid #F3B548;
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin-top: 16px;
-  }
-  .stuck-warning.show { display: block; }
-  .stuck-header {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'Fraunces', serif; font-weight: 400;
-    font-size: 15px; color: #8A6200; margin-bottom: 6px;
-  }
-  .stuck-body {
-    font-size: 12px; color: #7A5800; line-height: 1.6; margin-bottom: 12px;
-  }
-  .stuck-cmd {
-    background: #2D3F43; color: #E8F0F2;
-    font-family: monospace; font-size: 12px;
-    padding: 10px 14px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; margin-bottom: 8px;
-  }
-  .stuck-cmd span { flex: 1; word-break: break-all; }
-  .copy-btn {
-    background: var(--yellow); color: #fff;
-    border: none; border-radius: 6px;
-    font-family: 'Quick', sans-serif; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    padding: 5px 10px; cursor: pointer; flex-shrink: 0;
-    transition: opacity 0.15s;
-  }
-  .copy-btn:hover { opacity: 0.85; }
-  .copy-btn.copied { background: #7BC47A; }
-
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%) translateY(70px);
-    background: #2D3F43; color: #fff;
-    font-size: 13px; font-family: 'Nunito', sans-serif;
-    padding: 13px 26px; border-radius: 50px; z-index: 999;
-    transition: transform 0.3s, opacity 0.3s; opacity: 0; white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-  @media (max-width:900px) {
-    .teams-grid { grid-template-columns: 1fr 1fr; }
-    .stats-row  { grid-template-columns: 1fr 1fr; }
-    .panel { width: 100vw; }
-    .header { padding: 20px 24px; }
-    .page { padding: 28px 20px; }
-  }
-  @media (max-width:600px) {
-    .teams-grid { grid-template-columns: 1fr; }
-  }
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .header, .tabs-bar, .page-wrap { padding-left: 20px; padding-right: 20px; }
+  .login-card { padding: 40px 28px 36px; }
+  .header-right { gap: 10px; }
+}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div>
-    <div class="header-eyebrow">Simple Creator Co.</div>
-    <div class="header-title">Agent Hub</div>
-  </div>
-  <div class="header-right">
-    <div class="pulse-dot" id="globalDot"></div>
-    <span class="header-status" id="globalStatus">All Systems Idle</span>
-  </div>
-</div>
-
-<!-- PAGE -->
-<div class="page">
-
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Drafts This Week</div>
-      <div class="stat-num" id="statDrafts">0</div>
-      <div class="stat-desc">Goal: 3–5 per week</div>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-mark">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2 L13.8 9.2 L21 8 L15.5 13.5 L18 21 L12 17 L6 21 L8.5 13.5 L3 8 L10.2 9.2 Z"/>
+      </svg>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Posts</div>
-      <div class="stat-num" id="statTotal">0</div>
-      <div class="stat-desc">AEO-optimized drafts</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Active Teams</div>
-      <div class="stat-num">1</div>
-      <div class="stat-desc">of 3 configured</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Last Run</div>
-      <div class="stat-num" style="font-size:24px;padding-top:8px;" id="statLastRun">—</div>
-      <div class="stat-desc" id="statLastDesc">No runs yet</div>
-    </div>
-  </div>
-
-  <div class="section-label">Your Agent Teams</div>
-
-  <div class="teams-grid">
-
-    <div class="team-card" onclick="openPanel()">
-      <div class="team-card-top">
-        <div class="accent-bar bar-blue"></div>
-        <div class="team-icon bg-blue">✍️</div>
-        <div class="team-name">AEO Blog Pipeline</div>
-        <div class="team-tagline">9 agents. One command. AEO-optimized WordPress drafts — automatically. Your only job: review and hit publish.</div>
-      </div>
-      <div class="team-card-bottom">
-        <div>
-          <div class="team-agent-count">9 Agents · 3 Commands</div>
-          <div class="team-last-run" id="aeoLastRun">Never run</div>
-        </div>
-        <div class="badge badge-idle" id="aeoBadge">Idle</div>
-      </div>
-    </div>
-
-    <div class="team-card disabled">
-      <div class="team-card-top">
-        <div class="accent-bar bar-sage"></div>
-        <div class="team-icon bg-sage">💬</div>
-        <div class="team-name">Customer Support Team</div>
-        <div class="team-tagline">Automated responses, ticket routing, and FAQ handling for your customers.</div>
-      </div>
-      <div class="team-card-bottom">
-        <div>
-          <div class="team-agent-count">Not configured</div>
-          <div class="team-last-run">—</div>
-        </div>
-        <div class="badge badge-soon">Coming Soon</div>
-      </div>
-    </div>
-
-    <div class="add-card" onclick="toast('New team builder coming soon!')">
-      <div class="add-icon">＋</div>
-      <div class="add-label">Add a Team</div>
-      <div class="add-sub">Build a new agent team for any part of your business</div>
-    </div>
-
+    <div class="login-eyebrow">Simple Creator Co.</div>
+    <div class="login-title">Agent Hub</div>
+    <div class="login-sub">Enter your email to access the dashboard.<br>You'll only need to do this once per device.</div>
+    <input class="login-input" id="login-email" type="email" placeholder="your@email.com" autocomplete="email" autofocus>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-note">Your schedule, queue, and run history stay in sync<br>across every device — no password needed.</div>
   </div>
 </div>
 
-<!-- PANEL -->
-<div class="overlay" id="overlay" onclick="overlayClick(event)">
-<div class="panel">
+<!-- APP -->
+<div id="app">
 
-  <div class="panel-header">
+  <div class="header">
     <div>
-      <div class="panel-eyebrow">AEO Blog Pipeline · 9 Agents</div>
-      <div class="panel-title">Blog Pipeline</div>
-      <div class="panel-desc">Finds questions, researches gaps, writes posts in your voice, and drops drafts into WordPress. Your time investment: 20–30 min/week to review and publish.</div>
+      <div class="header-eyebrow">Simple Creator Co.</div>
+      <div class="header-title">Agent Hub</div>
     </div>
-    <button class="close-btn" onclick="closePanel()">✕</button>
+    <div class="header-right">
+      <div class="status-badge">
+        <div class="status-dot" id="status-dot"></div>
+        <span class="status-lbl" id="status-lbl">Checking...</span>
+      </div>
+      <div class="user-pill">
+        <div class="user-dot"></div>
+        <span class="user-email-lbl" id="user-email-display"></span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Log out</button>
+    </div>
   </div>
 
-  <div class="panel-body">
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('agents',this)">Agents</button>
+    <button class="tab-btn" onclick="showTab('schedule',this)">Schedule</button>
+    <button class="tab-btn" onclick="showTab('queue',this)">Queue</button>
+  </div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('run',this)">Run Pipeline</button>
-      <button class="tab" onclick="switchTab('request',this)">Request Post</button>
-      <button class="tab" onclick="switchTab('freshness',this)">Freshness Audit</button>
-      <button class="tab" onclick="switchTab('progress',this)">Progress</button>
-    </div>
+  <div class="page-wrap">
 
-    <!-- TAB: RUN PIPELINE -->
-    <div class="tab-pane active" id="tab-run">
-
-      <div class="mini-stats">
-        <div class="mini-stat"><div class="mini-label">This Week</div><div class="mini-val" id="panelDrafts">0</div></div>
-        <div class="mini-stat"><div class="mini-label">Total Posts</div><div class="mini-val" id="panelTotal">0</div></div>
-        <div class="mini-stat"><div class="mini-label">Agents</div><div class="mini-val">9</div></div>
-      </div>
-
-      <!-- BRAINSTORM QUEUE (feeds from brainstorm tab) -->
-      <div class="queue-section" id="queueSection" style="display:none; margin-bottom:16px;">
-        <div class="queue-label">Up Next — <span id="queueCount">0</span> in queue</div>
-        <div class="queue-list" id="queueList"></div>
-      </div>
-
-      <div class="run-controls">
-        <button class="btn-primary" id="runBtn" onclick="startRun()">▶ Run Now</button>
-        <button class="btn-secondary" id="stopBtn" style="display:none;" onclick="stopRun()">■ Stop</button>
-        <div class="batch-wrap">
-          <span class="batch-label">Posts:</span>
-          <input class="batch-input" id="batchNum" type="number" min="1" max="10" value="1">
+    <!-- OVERVIEW -->
+    <div class="panel active" id="panel-overview">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">This Week</div>
+          <div class="stat-val" id="stat-week">—</div>
+          <div class="stat-sub">Drafts published</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-val" id="stat-total">—</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">In Queue</div>
+          <div class="stat-val" id="stat-queue">—</div>
+          <div class="stat-sub">Topics waiting</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Next Run</div>
+          <div class="stat-val" style="font-size:18px;letter-spacing:0;padding-top:7px;" id="stat-next">—</div>
+          <div class="stat-sub" id="stat-next-sub">No schedule set</div>
         </div>
       </div>
 
-      <div id="progressSection" style="display:none;" class="progress-section">
-        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-        <div class="progress-label" id="progressLabel">Starting...</div>
-        <div id="parallelTracker" class="parallel-tracker" style="display:none;"></div>
+      <div class="pipeline-bar-card" id="pipeline-bar-card" style="display:none;">
+        <div class="pb-top">
+          <div class="pb-label">Pipeline Running</div>
+          <div class="pb-pct" id="pb-pct">0%</div>
+        </div>
+        <div class="pb-track"><div class="pb-fill" id="pb-fill"></div></div>
+        <div class="pb-agent-label" id="pb-agent-label">Initializing...</div>
       </div>
 
-      <!-- STUCK WARNING -->
-      <div class="stuck-warning" id="stuckWarning">
-        <div class="stuck-header">⚠️ Agent <span id="stuckAgentName"></span> might be stuck</div>
-        <div class="stuck-body">
-          It's been running longer than expected. The pipeline may be waiting for input or hit an error.
-          Open Terminal and run one of these to see what's happening:
-        </div>
-        <div class="stuck-cmd">
-          <span>tail -f ~/Documents/scc-blog-pipeline/logs/bridge.log</span>
-          <button class="copy-btn" onclick="copyCmd(this, 'tail -f ~/Documents/scc-blog-pipeline/logs/bridge.log')">Copy</button>
-        </div>
-        <div class="stuck-cmd">
-          <span>watch -n 2 cat ~/Documents/scc-blog-pipeline/logs/pipeline-status.json</span>
-          <button class="copy-btn" onclick="copyCmd(this, 'watch -n 2 cat ~/Documents/scc-blog-pipeline/logs/pipeline-status.json')">Copy</button>
+      <div class="run-row">
+        <button class="btn-primary" id="run-btn" onclick="triggerRun()">▶ Run Pipeline Now</button>
+        <button class="btn-stop" id="stop-btn" style="display:none;" onclick="stopRun()">■ Stop</button>
+        <div class="batch-group">
+          <span class="batch-lbl">Posts</span>
+          <input class="batch-inp" type="number" id="batch-num" value="1" min="1" max="10">
         </div>
       </div>
 
-      <div class="section-sub" style="margin-top:4px;">The 9 Agents</div>
-      <div id="agentList"></div>
-
-      <div class="schedule-box" style="margin-top:28px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <div class="schedule-title" style="margin-bottom:0;">Schedule</div>
-          <button id="scheduleEditBtn" onclick="editSchedule()" style="display:none;background:none;border:none;font-family:'Quick',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--blue);cursor:pointer;opacity:0.7;">Edit</button>
-        </div>
-
-        <!-- EDIT MODE -->
-        <div id="scheduleEditMode">
-          <div class="day-toggles" id="dayToggles">
-            <div class="day-toggle on" onclick="toggleDay(this)">Mon</div>
-            <div class="day-toggle on" onclick="toggleDay(this)">Tue</div>
-            <div class="day-toggle on" onclick="toggleDay(this)">Wed</div>
-            <div class="day-toggle on" onclick="toggleDay(this)">Thu</div>
-            <div class="day-toggle on" onclick="toggleDay(this)">Fri</div>
-            <div class="day-toggle" onclick="toggleDay(this)">Sat</div>
-            <div class="day-toggle" onclick="toggleDay(this)">Sun</div>
-          </div>
-          <div class="time-row">
-            <label>Run at</label>
-            <select class="time-select" id="scheduleTime">
-              <option>6:00 AM</option><option>7:00 AM</option>
-              <option selected>8:00 AM</option><option>9:00 AM</option>
-              <option>10:00 AM</option><option>12:00 PM</option><option>2:00 PM</option>
-            </select>
-          </div>
-          <div class="time-row">
-            <label>Posts per run</label>
-            <input class="batch-input" id="scheduleBatch" type="number" min="1" max="10" value="1" style="width:64px;">
-            <span style="font-size:12px;color:var(--body);opacity:0.6;">(posts run in parallel)</span>
-          </div>
-          <button class="btn-secondary" onclick="saveSchedule()" style="font-size:10px;padding:10px 20px;">Save Schedule</button>
-        </div>
-
-        <!-- SAVED/LOCKED MODE -->
-        <div id="scheduleSavedMode" style="display:none;">
-          <div class="day-toggles" id="savedDayDisplay"></div>
-          <div class="time-row" style="margin-top:4px;">
-            <label>Run at</label>
-            <span id="savedTimeDisplay" style="font-size:14px;font-family:'Fraunces',serif;font-weight:400;color:var(--blue);text-decoration:underline;text-underline-offset:3px;"></span>
-          </div>
-          <div class="time-row">
-            <label>Posts per run</label>
-            <span id="savedBatchDisplay" style="font-size:14px;font-family:'Fraunces',serif;font-weight:400;color:var(--blue);text-decoration:underline;text-underline-offset:3px;"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-sub" style="margin-top:28px;">Recent Runs</div>
-      <div id="logList"><div class="log-empty">No runs yet. Hit "Run Now" to produce your first draft.</div></div>
-
-    </div>
-
-    <!-- TAB: REQUEST POST -->
-    <div class="tab-pane" id="tab-request">
-
-      <div class="mode-tabs">
-        <button class="mode-tab active" onclick="switchMode('write',this)">Write a Post</button>
-        <button class="mode-tab" onclick="switchMode('brainstorm',this)">Brainstorm Ideas</button>
-      </div>
-
-      <div id="mode-write">
-        <label class="form-label">What do you want to write about?</label>
-        <input class="form-input" id="writeInput" type="text" placeholder="e.g. how to price your first digital product" oninput="checkPartnership(this.value)">
-        <div class="partnership-note" id="partnershipNote">✦ This will be written as a partnership-aware post — Flodesk mentions will be more prominent than standard posts.</div>
-        <button class="btn-primary" onclick="triggerWrite()">▶ Write This Post</button>
-        <p style="font-size:12px;color:var(--body);opacity:0.6;margin-top:10px;">Skips Agents 1–2. Runs Agents 3–9. Drops a draft into WordPress.</p>
-      </div>
-
-      <div id="mode-brainstorm" style="display:none;">
-        <label class="form-label">Theme or campaign</label>
-        <input class="form-input" id="brainstormInput" type="text" placeholder="e.g. beginner objections, getting first sales">
-        <label class="form-label">How many ideas?</label>
-        <input class="form-input" id="ideaCount" type="number" min="1" max="20" value="10" style="width:100px;">
-        <button class="btn-primary" onclick="runBrainstorm()">Generate Ideas</button>
-        <div class="idea-list" id="ideaList"></div>
-      </div>
-      </div>
-
-    </div>
-
-    <!-- TAB: FRESHNESS AUDIT -->
-    <div class="tab-pane" id="tab-freshness">
-      <p class="freshness-intro">Run a monthly audit across all published posts. Flags posts where stats, screenshots, pricing, or links have gone stale — and returns a prioritized refresh queue.</p>
-      <div class="freshness-box">
-        <div class="freshness-icon">🔎</div>
-        <div class="freshness-title">Monthly Content Audit</div>
-        <div class="freshness-sub">Suggested: first Sunday of each month</div>
-        <button class="btn-primary" onclick="triggerFreshness()">Run Monthly Audit</button>
-      </div>
-      <div class="section-sub" style="margin-top:28px;">What gets checked</div>
-      <div style="font-size:13px;color:var(--body);opacity:0.8;line-height:2;">
-        Stats and numbers · Screenshot currency · Pricing references · Internal and affiliate links · Keyword ranking shifts · Thin content · New internal link opportunities
+      <div class="sec-eyebrow">Recent Runs</div>
+      <div class="sec-heading">Activity Log</div>
+      <div class="log-card">
+        <ul class="log-list" id="run-log">
+          <li class="log-empty">Loading...</li>
+        </ul>
       </div>
     </div>
 
-    <!-- TAB: PROGRESS -->
-    <div class="tab-pane" id="tab-progress">
+    <!-- AGENTS -->
+    <div class="panel" id="panel-agents">
+      <div class="sec-eyebrow">AEO Blog Pipeline</div>
+      <div class="sec-heading">All 9 Agents</div>
+      <div class="agents-grid" id="agents-grid"></div>
+    </div>
 
-      <div class="section-sub">Posts Published</div>
-      <div style="font-family:'Fraunces',serif;font-weight:900;font-size:56px;color:var(--blue);letter-spacing:-2px;line-height:1;" id="bigTotal">0</div>
-      <div style="font-size:13px;color:var(--body);opacity:0.6;margin-top:4px;margin-bottom:12px;">of 200 milestone</div>
-      <div style="background:var(--bg);border-radius:50px;height:8px;overflow:hidden;">
-        <div id="milestonebar" style="height:100%;border-radius:50px;background:var(--sage);width:0%;transition:width 0.6s;"></div>
+    <!-- SCHEDULE -->
+    <div class="panel" id="panel-schedule">
+      <div class="sec-eyebrow">Automation</div>
+      <div class="sec-heading">Pipeline Schedule</div>
+      <div class="schedule-card">
+        <div class="schedule-row">
+          <div class="field-group">
+            <div class="field-label">Run on these days</div>
+            <div class="days-row">
+              <div class="day-toggle" data-day="sun" onclick="toggleDay(this)">Sun</div>
+              <div class="day-toggle" data-day="mon" onclick="toggleDay(this)">Mon</div>
+              <div class="day-toggle" data-day="tue" onclick="toggleDay(this)">Tue</div>
+              <div class="day-toggle" data-day="wed" onclick="toggleDay(this)">Wed</div>
+              <div class="day-toggle" data-day="thu" onclick="toggleDay(this)">Thu</div>
+              <div class="day-toggle" data-day="fri" onclick="toggleDay(this)">Fri</div>
+              <div class="day-toggle" data-day="sat" onclick="toggleDay(this)">Sat</div>
+            </div>
+          </div>
+        </div>
+        <div class="schedule-row">
+          <div class="field-group">
+            <div class="field-label">Start time</div>
+            <input class="time-input" type="time" id="sched-time" value="02:00">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Posts per run</div>
+            <input class="posts-input" type="number" id="sched-posts" value="1" min="1" max="10">
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;">
+          <button class="save-btn" id="save-btn" onclick="saveSchedule()">Save Schedule</button>
+          <span class="save-confirm" id="save-confirm">✓ Saved</span>
+        </div>
+        <div class="sched-summary" id="sched-summary">
+          No schedule set yet. Pick days and a time above, then hit Save Schedule.
+        </div>
       </div>
-
-      <div class="section-sub" style="margin-top:28px;">AEO Compounding Timeline</div>
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-posts">12–15</div>
-          <div><div class="tl-timeframe">Month 1</div><div class="tl-desc">AI tools begin indexing thesimplecreator.com as a source.</div></div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-posts">50+</div>
-          <div><div class="tl-timeframe">Month 3</div><div class="tl-desc">Topical clusters forming — citations begin for digital product questions.</div></div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-posts">100+</div>
-          <div><div class="tl-timeframe">Month 6</div><div class="tl-desc">Rebecca Rice and Simple Creator Co. become named entities AI models associate with digital products.</div></div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-posts">200+</div>
-          <div><div class="tl-timeframe">Month 12</div><div class="tl-desc">thesimplecreator.com is a go-to citation source across all major AI tools for the digital product niche.</div></div>
+      <div style="background:var(--white);border-radius:14px;padding:20px 24px;max-width:660px;">
+        <div class="sec-eyebrow" style="margin-bottom:5px;">How this works</div>
+        <div style="font-size:13px;color:var(--body);opacity:0.7;line-height:1.7;">
+          Your schedule is saved to Firebase and stays there forever — even when you upload a new version of this file to GitHub. UI updates never touch your data. Your Mac still needs to be awake when a scheduled run fires.
         </div>
       </div>
+    </div>
 
-      <div class="section-sub" style="margin-top:28px;">Recommended Cadence</div>
-      <div style="font-size:13px;color:var(--body);line-height:2;opacity:0.85;">
-        Month 1: 3 posts/week — build quality baseline<br>
-        Month 2: 5 posts/week — ramp up as quality is confirmed<br>
-        Month 3+: 5–10 posts/week — full speed ahead
+    <!-- QUEUE -->
+    <div class="panel" id="panel-queue">
+      <div class="sec-eyebrow">Content Pipeline</div>
+      <div class="sec-heading">Topic Queue</div>
+      <div class="queue-input-row">
+        <input class="queue-input" id="topic-input" type="text" placeholder="Add a topic idea..."
+          onkeydown="if(event.key==='Enter') addTopic()">
+        <button class="btn-add" onclick="addTopic()">+ Add</button>
       </div>
-
+      <div class="queue-card">
+        <div class="queue-empty" id="queue-empty" style="display:none;">No topics queued yet. Add one above.</div>
+        <div id="queue-list"></div>
+      </div>
     </div>
 
   </div>
 </div>
-</div>
 
-<div class="toast" id="toastEl"></div>
+<div class="toast" id="toast"></div>
 
-<script>
-  const AGENTS = [
-    { num:1, icon:'🗂️', name:'Topic Cluster Manager',      model:'Haiku 4.5',  desc:'Reads topic log · assigns cluster + funnel gap · passes targeting brief to Agent 2' },
-    { num:2, icon:'🔍', name:'AI Question Miner',           model:'Sonnet 4.6', desc:'Live research across Reddit, Quora, PAA, YouTube · scores candidates · selects best gap' },
-    { num:3, icon:'🕵️', name:'Competitor Citation Auditor', model:'Sonnet 4.6', desc:'Reads actual competitor pages · identifies AEO gaps · builds beat-this brief' },
-    { num:4, icon:'📐', name:'AEO Content Strategist',      model:'Haiku 4.5',  desc:'Designs full post blueprint — every H2, H3, FAQ, and CTA placement' },
-    { num:5, icon:'🔗', name:'Internal Link Mapper',         model:'Haiku 4.5',  desc:'Maps 3–5 internal links with exact anchor text · flags affiliate opportunity' },
-    { num:6, icon:'✍️', name:'Writer',                      model:'Sonnet 4.6', desc:'Writes complete post as Rebecca Rice · 42-item self-check before passing to Agent 7' },
-    { num:7, icon:'✅', name:'AEO Auditor',                  model:'Sonnet 4.6', desc:'28-item quality gate · PASS or FAIL with fix instructions · max 3 revision loops' },
-    { num:8, icon:'🏷️', name:'Schema + Metadata Writer',    model:'Haiku 4.5',  desc:'SEO title, meta description, slug, Article + FAQ + Breadcrumb schema, WP tags' },
-    { num:9, icon:'🚀', name:'WordPress Publisher',          model:'Haiku 4.5',  desc:'Converts to HTML · adds editor note · creates DRAFT via WordPress REST API' },
-  ];
+<script type="module">
+// ─────────────────────────────────────────────
+//  FIREBASE INIT  (modular SDK — works everywhere)
+// ─────────────────────────────────────────────
+import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-  const SAMPLE_IDEAS = [
-    { title:'How to create a digital product with zero audience', cluster:'Product Creation' },
-    { title:'What to sell as a digital product: 12 ideas that actually convert', cluster:'Product Ideas' },
-    { title:'Why $17 is the magic price for your first digital product', cluster:'Pricing' },
-    { title:'How to make your first digital product sale without a website', cluster:'Sales' },
-    { title:'Canva templates vs. PDF guides: which digital product sells better?', cluster:'Product Creation' },
-    { title:'What is Flodesk and why beginners use it instead of a website', cluster:'Tools' },
-    { title:'How long does it take to make money selling digital products?', cluster:'Expectations' },
-    { title:'How to write a digital product description that converts', cluster:'Copywriting' },
-    { title:'The difference between passive and active income for creators', cluster:'Mindset' },
-    { title:'How to price a mini course as a complete beginner', cluster:'Pricing' },
-    { title:'Do you need a business license to sell digital products?', cluster:'Getting Started' },
-    { title:'How to sell digital products on Flodesk step by step', cluster:'Platform' },
-    { title:'What makes a digital product actually sell', cluster:'Product Creation' },
-    { title:'Why your digital product isn\'t selling (and how to fix it)', cluster:'Troubleshooting' },
-    { title:'How to get your first 100 email subscribers for free', cluster:'Email' },
-    { title:'The real cost of selling digital products on Etsy', cluster:'Platform' },
-    { title:'How to create a PDF guide that people actually buy', cluster:'Product Creation' },
-    { title:'What is an evergreen funnel and do you need one?', cluster:'Strategy' },
-    { title:'How to use Canva to create digital products that look professional', cluster:'Tools' },
-    { title:'Is it too late to start selling digital products in 2025?', cluster:'Mindset' },
-  ];
+const app = initializeApp({
+  apiKey:            "AIzaSyAiozCUApOYfzlxaPfnwGfjy39GX2Cn2a4",
+  authDomain:        "scc-agent-hub-x7k9.firebaseapp.com",
+  projectId:         "scc-agent-hub-x7k9",
+  storageBucket:     "scc-agent-hub-x7k9.firebasestorage.app",
+  messagingSenderId: "366128470117",
+  appId:             "1:366128470117:web:fe765dfbe04d594232ce8c"
+});
+const db = getFirestore(app);
 
-  let isRunning=false, runTimer=null, agentStep=-1;
-  let batchTotal=1, batchRemaining=1;
-  let draftsWeek=0, totalPosts=0;
-  let runLog=[];
+// ─────────────────────────────────────────────
+//  FIREBASE HELPERS
+//  All data lives in Firestore collection "hub"
+//  UI updates never touch this data
+// ─────────────────────────────────────────────
+async function fbGet(key) {
+  try {
+    const snap = await getDoc(doc(db, 'hub', key));
+    return snap.exists() ? snap.data().value : null;
+  } catch(e) {
+    console.error('Firebase read error:', key, e);
+    return null;
+  }
+}
 
-  function renderAgents(activeSteps) {
-    // activeSteps: undefined = all idle, number = single active, array = multiple active indices
-    const activeArr = activeSteps === undefined ? []
-      : typeof activeSteps === 'number' ? [activeSteps]
-      : activeSteps;
+async function fbSet(key, val) {
+  try {
+    await setDoc(doc(db, 'hub', key), { value: val });
+    return true;
+  } catch(e) {
+    console.error('Firebase write error:', key, e);
+    return false;
+  }
+}
 
-    const activeSet  = new Set(activeArr.filter(s => s >= 0 && s < AGENTS.length));
+// ─────────────────────────────────────────────
+//  AUTH  — email saved per-device in localStorage
+//  Any valid email address gets in.
+//  The URL is the gate.
+// ─────────────────────────────────────────────
+function getSavedEmail()       { return localStorage.getItem('scc-hub-email') || ''; }
+function saveEmailLocally(e)   { localStorage.setItem('scc-hub-email', e.trim().toLowerCase()); }
+function clearEmailLocally()   { localStorage.removeItem('scc-hub-email'); }
 
-    // Waiting: an agent index that has a post queued behind it (i.e. a post is at step N,
-    // and another post is already Running at step N — so that post must wait)
-    // In practice: if two posts land on the same agent index, one runs, one waits.
-    const stepCounts = {};
-    activeArr.forEach(s => { if (s >= 0 && s < AGENTS.length) stepCounts[s] = (stepCounts[s]||0) + 1; });
-    const waitingSet = new Set(Object.keys(stepCounts).filter(s => stepCounts[s] > 1).map(Number));
+function doLogin() {
+  const input = document.getElementById('login-email');
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  const email = input.value.trim().toLowerCase();
 
-    document.getElementById('agentList').innerHTML = AGENTS.map((a,i) => {
-      let cls, lbl;
-      if (waitingSet.has(i))     { cls='ab-waiting'; lbl='Waiting'; }
-      else if (activeSet.has(i)) { cls='ab-running';  lbl='Running'; }
-      else                       { cls='ab-idle';     lbl='Idle'; }
-      return `<div class="agent-row">
-        <span class="agent-num">${a.num}</span>
-        <div class="agent-icon-sm">${a.icon}</div>
-        <div class="agent-info">
-          <div class="agent-name">${a.name}</div>
-          <div class="agent-meta">${a.model} · ${a.desc}</div>
-        </div>
-        <span class="agent-badge ${cls}">${lbl}</span>
-      </div>`;
-    }).join('');
+  errEl.textContent = '';
+
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    errEl.textContent = 'Please enter a valid email address.';
+    return;
   }
 
-  // ── PARALLEL STATE ──
-  // postSteps[i] = current agent index (0-8) for post i, or 9 = done
-  let postSteps = [];
-  let postTimers = []; // one timer per post
+  btn.disabled    = true;
+  btn.textContent = 'Loading...';
 
-  const SERVER = 'http://localhost:3333';
+  saveEmailLocally(email);
+  bootApp(email);
+}
 
-  async function callServer(endpoint, method='POST', body=null) {
-    try {
-      const res = await fetch(`${SERVER}${endpoint}`, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : null
-      });
-      return await res.json();
-    } catch (err) {
-      console.warn('Server unreachable:', err);
-      return null;
-    }
+function doLogout() {
+  clearEmailLocally();
+  location.reload();
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+async function bootApp(email) {
+  // Dismiss login
+  const ls = document.getElementById('login-screen');
+  ls.classList.add('fade-out');
+  setTimeout(() => ls.classList.add('gone'), 380);
+
+  // Show app
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('user-email-display').textContent = email;
+
+  // Render static agent grid immediately
+  renderAgentsGrid();
+
+  // Load all persisted data from Firebase
+  await loadAllData();
+
+  // Start bridge poller for live pipeline status
+  startBridgePoller();
+}
+
+async function loadAllData() {
+  const [schedule, log, queue, stats] = await Promise.all([
+    fbGet('schedule'),
+    fbGet('runlog'),
+    fbGet('queue'),
+    fbGet('stats'),
+  ]);
+
+  applyScheduleToUI(schedule);
+  renderLog(log);
+  renderQueue(queue);
+  applyStats(stats);
+  updateNextRunDisplay(schedule);
+}
+
+// ─────────────────────────────────────────────
+//  AGENTS
+// ─────────────────────────────────────────────
+const AGENTS = [
+  { num:'01', name:'Topic Cluster Manager',      role:'Selects the next topic from the log and reserves it for this run.' },
+  { num:'02', name:'AI Question Miner',           role:'Researches real questions people ask about this topic across the web.' },
+  { num:'03', name:'Competitor Citation Auditor', role:'Analyzes how competitors cover the topic and finds citation gaps.' },
+  { num:'04', name:'AEO Content Strategist',      role:'Builds the full content brief: angle, headers, answer strategy.' },
+  { num:'05', name:'Internal Link Mapper',        role:'Finds the best internal linking opportunities on the site.' },
+  { num:'06', name:'Writer',                      role:'Writes the full post with AEO structure, brand voice, and direct answer blocks.' },
+  { num:'07', name:'AEO Auditor',                 role:'Runs the 28-point audit checklist. Rewrites until the post passes.' },
+  { num:'08', name:'Schema & Metadata Writer',    role:'Writes schema markup, SEO title, meta description, and Open Graph tags.' },
+  { num:'09', name:'WordPress Publisher',         role:'Publishes the draft via REST API and sends a new thread to #scc-aeo-blog-bot.' },
+];
+
+let agentStatuses = AGENTS.map(() => 'queued');
+
+function renderAgentsGrid() {
+  const grid = document.getElementById('agents-grid');
+  grid.innerHTML = AGENTS.map((a, i) => `
+    <div class="agent-card" id="ac-${i}">
+      <div class="agent-num">Agent ${a.num}</div>
+      <div class="agent-name">${a.name}</div>
+      <div class="agent-role">${a.role}</div>
+      <div class="agent-status-row">
+        <div class="agent-dot" id="ad-${i}"></div>
+        <span class="agent-status-txt" id="at-${i}">Queued</span>
+      </div>
+    </div>`).join('');
+}
+
+function setAgentStatus(i, st) {
+  agentStatuses[i] = st;
+  const card = document.getElementById(`ac-${i}`);
+  const dot  = document.getElementById(`ad-${i}`);
+  const txt  = document.getElementById(`at-${i}`);
+  if (!card) return;
+  ['running','done','error'].forEach(c => { card.classList.remove(c); dot.classList.remove(c); txt.classList.remove(c); });
+  if (st !== 'queued') { card.classList.add(st); dot.classList.add(st); txt.classList.add(st); }
+  txt.textContent = { queued:'Queued', running:'Running', done:'Done', error:'Error' }[st] || 'Queued';
+}
+
+function resetAgents() {
+  AGENTS.forEach((_, i) => setAgentStatus(i, 'queued'));
+}
+
+// ─────────────────────────────────────────────
+//  BRIDGE POLLER
+// ─────────────────────────────────────────────
+const BRIDGE = 'http://localhost:3333';
+let isRunning = false;
+
+function startBridgePoller() {
+  pollBridge();
+  setInterval(pollBridge, 3000);
+}
+
+async function pollBridge() {
+  try {
+    const r = await fetch(`${BRIDGE}/status`, { signal: AbortSignal.timeout(2500) });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    applyBridgeStatus(data);
+  } catch {
+    document.getElementById('status-dot').className = 'status-dot';
+    document.getElementById('status-lbl').textContent = 'Bridge Offline';
+    if (isRunning) { isRunning = false; showRunBtn(); hidePipelineBar(); }
   }
+}
 
-  function startRun() {
-    if (isRunning) return;
-    batchTotal = Math.max(1, Math.min(10, parseInt(document.getElementById('batchNum').value)||1));
-    batchRemaining = batchTotal;
-    isRunning = true;
-    agentStep = 0;
+function applyBridgeStatus(data) {
+  const dot = document.getElementById('status-dot');
+  const lbl = document.getElementById('status-lbl');
 
-    // Fire real pipeline command
-    callServer('/run-pipeline', 'POST', { posts: batchTotal }).then(res => {
-      if (res) console.log('Pipeline started:', res);
-      else toast('⚠️ Could not reach local server — running in simulation mode.');
+  if (data.running) {
+    dot.className    = 'status-dot running';
+    lbl.textContent  = 'Pipeline Running';
+    isRunning        = true;
+    showStopBtn();
+    showPipelineBar();
+
+    const cur   = parseInt(data.currentAgent) || 0;
+    const pct   = Math.round((cur / AGENTS.length) * 100);
+    document.getElementById('pb-fill').style.width   = pct + '%';
+    document.getElementById('pb-pct').textContent    = pct + '%';
+    document.getElementById('pb-agent-label').textContent =
+      cur > 0 && cur <= AGENTS.length
+        ? `Running: Agent ${String(cur).padStart(2,'0')} — ${AGENTS[cur-1]?.name}`
+        : 'Initializing...';
+
+    AGENTS.forEach((_, i) => {
+      if      (i < cur - 1)  setAgentStatus(i, 'done');
+      else if (i === cur - 1) setAgentStatus(i, 'running');
+      else                    setAgentStatus(i, 'queued');
     });
 
-    // Each post gets its own step counter, starting staggered
-    postSteps = Array.from({length: batchTotal}, (_, i) => -i);
-    postTimers = [];
+  } else {
+    dot.className   = 'status-dot online';
+    lbl.textContent = 'Bridge Online';
 
-    document.getElementById('runBtn').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'inline-flex';
-    document.getElementById('progressSection').style.display = 'block';
-    document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('progressBar').style.background = 'var(--yellow)';
-    document.getElementById('aeoBadge').textContent = 'Running';
-    document.getElementById('aeoBadge').className = 'badge badge-running';
-    document.getElementById('globalDot').className = 'pulse-dot running';
-    document.getElementById('globalStatus').textContent = 'Pipeline Running';
-
-    if (batchTotal > 1) {
-      document.getElementById('parallelTracker').style.display = 'flex';
-      renderParallelTracker();
-    }
-
-    // Start real status poller — overrides simulation if server responds
-    startStatusPoller();
-    // Start stuck watcher for Agent 1
-    startStuckWatcher(0);
-
-    // Kick off simulation as fallback (poller will take over if server is live)
-    for (let i = 0; i < batchTotal; i++) {
-      schedulePostStep(i);
-    }
-  }
-
-  // ── REAL STATUS POLLER ──
-  let statusPoller = null;
-  let serverConnected = false;
-
-  function startStatusPoller() {
-    stopStatusPoller();
-    statusPoller = setInterval(async () => {
-      const status = await callServer('/status', 'GET');
-      if (!status) return; // server unreachable — simulation runs instead
-
-      serverConnected = true;
-
-      // Kill simulation timers — real data takes over
-      postTimers.forEach(t => clearTimeout(t));
-      postTimers = [];
-
-      if (status.phase === 'preflight') {
-        document.getElementById('progressBar').style.width = '5%';
-        document.getElementById('progressLabel').textContent = 'Pre-flight checks…';
-        renderAgents(); // all idle during preflight
-
-      } else if (status.phase === 'running' && status.currentAgent !== null) {
-        const agentIndex = status.currentAgent - 1; // server is 1-indexed
-        const pct = Math.round((agentIndex / AGENTS.length) * 100);
-        document.getElementById('progressBar').style.width = pct + '%';
-        document.getElementById('progressLabel').textContent =
-          `Agent ${status.currentAgent} of 9: ${status.currentAgentName || AGENTS[agentIndex]?.name || ''}` +
-          (status.elapsed ? ` · ${status.elapsed}` : '');
-        // Drive agent list from real data
-        postSteps = [agentIndex];
-        refreshUI();
-        // Reset stuck watcher whenever agent advances
-        if (lastKnownAgent !== agentIndex) {
-          startStuckWatcher(agentIndex);
-        }
-
-      } else if (status.phase === 'complete' || status.done === true) {
-        stopStatusPoller();
-        // Update draft URLs if server returned them
-        if (status.draftUrls && status.draftUrls.length) {
-          status.draftUrls.forEach((url, i) => {
-            addLog({ type:'success', text:`Draft ${i+1} ready in WordPress.`, time:nowStr(), link:'View Draft in WordPress', url });
-          });
-        }
-        finishRun();
-
-      } else if (status.running === false && !status.done) {
-        // Idle — run may have been stopped externally
-        stopStatusPoller();
-        if (isRunning) finishRun();
-      }
-    }, 3000);
-  }
-
-  function stopStatusPoller() {
-    if (statusPoller) { clearInterval(statusPoller); statusPoller = null; }
-  }
-
-  function schedulePostStep(postIndex) {
-    if (!isRunning) return;
-    // Each agent takes a random time between 700ms and 1800ms — heavier agents (2,3,6,7) run slower
-    const heavyAgents = new Set([1, 2, 5, 6]); // 0-indexed: agents 2,3,6,7
-    const currentStep = postSteps[postIndex];
-    const isHeavy = heavyAgents.has(currentStep);
-    const baseDelay = isHeavy ? 1200 : 700;
-    const jitter = Math.floor(Math.random() * 600);
-    const delay = baseDelay + jitter;
-
-    const timer = setTimeout(() => {
-      if (!isRunning) return;
-      advancePost(postIndex);
-    }, delay);
-
-    postTimers[postIndex] = timer;
-  }
-
-  function advancePost(postIndex) {
-    if (!isRunning) return;
-
-    postSteps[postIndex]++;
-    const step = postSteps[postIndex];
-
-    if (step >= AGENTS.length) {
-      // This post is done
-      draftsWeek++; totalPosts++; updateCounts();
-      const allDone = postSteps.every(s => s >= AGENTS.length);
-      if (!allDone) {
-        addLog({ type:'success', text:`Draft #${totalPosts} queued in WordPress.`, time:nowStr(), link:'View Draft' });
-      }
-      if (allDone) {
-        finishRun();
-        return;
-      }
-    } else {
-      // Schedule next step for this post
-      schedulePostStep(postIndex);
-    }
-
-    // Re-render shared UI
-    refreshUI();
-  }
-
-  function refreshUI() {
-    const allDone  = postSteps.every(s => s >= AGENTS.length);
-    const donePosts = postSteps.filter(s => s >= AGENTS.length).length;
-    const activePosts = postSteps.filter(s => s >= 0 && s < AGENTS.length).length;
-    const overallPct = Math.round((postSteps.reduce((a,s) => a + Math.min(Math.max(s,0), AGENTS.length), 0) / (batchTotal * AGENTS.length)) * 100);
-
-    document.getElementById('progressBar').style.width = overallPct + '%';
-
-    if (batchTotal > 1) {
-      document.getElementById('progressLabel').textContent =
-        donePosts === batchTotal
-          ? `All ${batchTotal} drafts complete.`
-          : `${activePosts} post${activePosts !== 1 ? 's' : ''} running in parallel · ${donePosts} of ${batchTotal} done`;
-      renderParallelTracker();
-      const activeAgentIndices = postSteps.filter(s => s >= 0 && s < AGENTS.length);
-      renderAgents(activeAgentIndices);
-    } else {
-      const step = postSteps[0];
-      document.getElementById('progressLabel').textContent =
-        step < AGENTS.length
-          ? `Agent ${step+1} of 9: ${AGENTS[step]?.name || ''}`
-          : 'All 9 agents complete. Draft sent to WordPress.';
-      renderAgents(step);
-    }
-  }
-
-  function stepRun() {} // no longer used — kept to avoid reference errors
-
-  function renderParallelTracker() {
-    const tracker = document.getElementById('parallelTracker');
-    tracker.innerHTML = postSteps.map((step, i) => {
-      const isDone = step >= AGENTS.length;
-      const agentName = (!isDone && step >= 0) ? AGENTS[step]?.name : '';
-      const statusText = isDone
-        ? 'Draft in WordPress ✓'
-        : step < 0
-          ? 'Waiting to start...'
-          : `Agent ${step+1}: ${agentName}`;
-      const pips = AGENTS.map((_, ai) => {
-        if (isDone || ai < step)      return 'done';
-        if (ai === step)              return 'active';
-        return 'queued';
-      });
-      return `<div class="pt-row">
-        <div class="pt-label">Post ${i+1}</div>
-        <div class="pt-track">${pips.map(p => `<div class="pt-pip ${p}"></div>`).join('')}</div>
-        <div class="pt-status${isDone ? ' done-text' : ''}">${statusText}</div>
-      </div>`;
-    }).join('');
-  }
-
-  function finishRun() {
-    isRunning = false;
-    stopStatusPoller();
-    clearStuckWatcher();
-    // Reset brainstorm active state (done marking handled in startIdeaPipeline interval)
-    activeIdeaIndex = null;
-    if (currentIdeas.length) renderIdeaList(currentIdeas);
-    document.getElementById('progressBar').style.width = '100%';
-    document.getElementById('progressBar').style.background = '#7BC47A';
-    document.getElementById('progressLabel').textContent = batchTotal > 1
-      ? `All ${batchTotal} drafts sent to WordPress.`
-      : 'All 9 agents complete. Draft sent to WordPress.';
-    document.getElementById('runBtn').style.display = 'inline-flex';
-    document.getElementById('stopBtn').style.display = 'none';
-    document.getElementById('aeoBadge').textContent = 'Idle';
-    document.getElementById('aeoBadge').className = 'badge badge-idle';
-    document.getElementById('globalDot').className = 'pulse-dot';
-    document.getElementById('globalStatus').textContent = 'All Systems Idle';
-    const now = nowStr();
-    document.getElementById('aeoLastRun').textContent = 'Last run: ' + now;
-    document.getElementById('statLastRun').textContent = now.split(' ')[0];
-    document.getElementById('statLastDesc').textContent = 'Today';
-    addLog({ type:'success', text:`${batchTotal > 1 ? batchTotal + ' drafts' : 'Draft #' + totalPosts} ready in WordPress. Review and publish when ready.`, time:now, link: batchTotal > 1 ? 'View All Drafts in WordPress' : 'View Draft in WordPress' });
-    renderAgents();
-    setTimeout(() => {
-      document.getElementById('progressSection').style.display = 'none';
-      document.getElementById('parallelTracker').style.display = 'none';
-    }, 4000);
-    toast(batchTotal > 1 ? `${batchTotal} drafts ready in WordPress.` : 'Draft ready in WordPress.');
-  }
-
-  function stopRun() {
-    if (!isRunning) return;
-    isRunning = false;
-    stopStatusPoller();
-    clearStuckWatcher();
-    callServer('/stop', 'POST');
-    postTimers.forEach(t => clearTimeout(t));
-    postTimers = [];
-    renderAgents();
-    document.getElementById('progressSection').style.display = 'none';
-    document.getElementById('parallelTracker').style.display = 'none';
-    document.getElementById('runBtn').style.display = 'inline-flex';
-    document.getElementById('stopBtn').style.display = 'none';
-    document.getElementById('aeoBadge').textContent = 'Idle';
-    document.getElementById('aeoBadge').className = 'badge badge-idle';
-    document.getElementById('globalDot').className = 'pulse-dot';
-    document.getElementById('globalStatus').textContent = 'All Systems Idle';
-    addLog({ type:'warn', text:'Run stopped manually.', time:nowStr() });
-    toast('Run stopped.');
-  }
-
-  function updateCounts() {
-    ['statDrafts','panelDrafts'].forEach(id => document.getElementById(id).textContent = draftsWeek);
-    ['statTotal','panelTotal','bigTotal'].forEach(id => document.getElementById(id).textContent = totalPosts);
-    document.getElementById('milestonebar').style.width = Math.min(100, Math.round((totalPosts/200)*100)) + '%';
-  }
-
-  function addLog(e) {
-    runLog.unshift(e);
-    document.getElementById('logList').innerHTML = runLog.map(e => `
-      <div class="log-entry">
-        <div class="log-dot log-dot-${e.type==='success'?'green':e.type==='warn'?'yellow':'coral'}"></div>
-        <div class="log-text">${e.text}${e.link
-          ? e.url
-            ? `<a class="log-link" href="${e.url}" target="_blank">${e.link} →</a>`
-            : `<a class="log-link" onclick="toast('Connect WordPress to see your draft URL.')">${e.link} →</a>`
-          : ''}</div>
-        <div class="log-time">${e.time}</div>
-      </div>`).join('');
-  }
-
-  function toggleDay(el) {
-    el.classList.toggle('on');
-  }
-
-  function saveSchedule() {
-    const days = [...document.querySelectorAll('#dayToggles .day-toggle.on')].map(d=>d.textContent);
-    if (!days.length) { toast('Pick at least one day.'); return; }
-    const time  = document.getElementById('scheduleTime').value;
-    const batch = document.getElementById('scheduleBatch').value || 1;
-
-    // Populate saved display
-    const savedDays = document.getElementById('savedDayDisplay');
-    savedDays.innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => {
-      const on = days.includes(d);
-      return `<div class="day-toggle${on ? ' on' : ''}" style="cursor:default;opacity:${on?'1':'0.35'};">${d}</div>`;
-    }).join('');
-
-    document.getElementById('savedTimeDisplay').textContent  = time;
-    document.getElementById('savedBatchDisplay').textContent = `${batch} post${batch==1?'':'s'}`;
-
-    // Switch to locked mode
-    document.getElementById('scheduleEditMode').style.display  = 'none';
-    document.getElementById('scheduleSavedMode').style.display = 'block';
-    document.getElementById('scheduleEditBtn').style.display   = 'inline-block';
-
-    toast('Schedule saved.');
-  }
-
-  function editSchedule() {
-    document.getElementById('scheduleEditMode').style.display  = 'block';
-    document.getElementById('scheduleSavedMode').style.display = 'none';
-    document.getElementById('scheduleEditBtn').style.display   = 'none';
-  }
-
-  function switchMode(mode, btn) {
-    document.querySelectorAll('.mode-tab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('mode-write').style.display      = mode==='write'       ? 'block':'none';
-    document.getElementById('mode-brainstorm').style.display = mode==='brainstorm'  ? 'block':'none';
-  }
-
-  function checkPartnership(val) {
-    document.getElementById('partnershipNote').classList.toggle('show', /flodesk|partnership|sponsored/i.test(val));
-  }
-
-  function triggerWrite() {
-    const val = document.getElementById('writeInput').value.trim();
-    if (!val) { toast('Type a topic first.'); return; }
-    toast(`Sending to pipeline: "${val.slice(0,45)}${val.length>45?'…':''}"`);
-    callServer('/run-pipeline', 'POST', { posts: 1, topic: val }).then(res => {
-      if (res && res.status === 'started') {
-        toast(`Pipeline started — check Claude Code for progress.`);
-      } else if (!res) {
-        toast('Could not reach local server — is the bridge running?');
-      }
-    });
-  }
-
-  // ── BRAINSTORM QUEUE ──
-  let brainstormQueue  = [];   // [{title, index}]
-  let activeIdeaIndex  = null; // which idea is currently running
-
-  function runBrainstorm() {
-    const theme = document.getElementById('brainstormInput').value.trim();
-    const count = Math.min(20, Math.max(1, parseInt(document.getElementById('ideaCount').value)||10));
-    if (!theme) { toast('Add a theme first.'); return; }
-    brainstormQueue = [];
-    activeIdeaIndex = null;
-    document.getElementById('queueSection').style.display = 'none';
-    const ideas = SAMPLE_IDEAS.slice(0, count);
-    renderIdeaList(ideas);
-    toast(`${ideas.length} ideas generated for "${theme}"`);
-  }
-
-  let doneIdeaIndices = new Set();
-
-  function renderIdeaList(ideas) {
-    document.getElementById('ideaList').innerHTML = ideas.map((idea, i) => {
-      const isRunning = activeIdeaIndex === i;
-      const inQueue   = brainstormQueue.some(q => q.index === i);
-      const isDone    = doneIdeaIndices.has(i);
-      let btn;
-      if (isDone) {
-        btn = `<span class="idea-done-btn">Done ✓</span>`;
-      } else if (isRunning) {
-        btn = `<span class="idea-running-btn">Running…</span>`;
-      } else if (inQueue) {
-        btn = `<span class="idea-inqueue-btn">In Queue</span>`;
-      } else if (activeIdeaIndex === null) {
-        btn = `<button class="idea-write-btn" onclick="startIdeaRun(${i}, '${idea.title.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">Write This</button>`;
+    if (isRunning) {
+      isRunning = false;
+      showRunBtn();
+      if (data.lastRunSuccess) {
+        AGENTS.forEach((_, i) => setAgentStatus(i, 'done'));
+        recordRun(data.lastTitle || 'New Draft', data.lastFinished || new Date().toISOString(), data.lastWpLink || null);
+        setTimeout(hidePipelineBar, 4000);
       } else {
-        btn = `<button class="idea-queue-btn" onclick="addToQueue(${i}, '${idea.title.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">Add to Queue</button>`;
+        hidePipelineBar();
+        resetAgents();
       }
-      return `<div class="idea-item" id="idea-item-${i}">
-        <div class="idea-text"><strong>${i+1}.</strong> ${idea.title}<br><span class="idea-cluster">${idea.cluster}</span></div>
-        ${btn}
-      </div>`;
-    }).join('');
-  }
-
-  // Keep a reference to current ideas so we can re-render
-  let currentIdeas = [];
-
-  function runBrainstorm() {
-    const theme = document.getElementById('brainstormInput').value.trim();
-    const count = Math.min(20, Math.max(1, parseInt(document.getElementById('ideaCount').value)||10));
-    if (!theme) { toast('Add a theme first.'); return; }
-    brainstormQueue = [];
-    activeIdeaIndex = null;
-    doneIdeaIndices = new Set();
-    document.getElementById('queueSection').style.display = 'none';
-    currentIdeas = SAMPLE_IDEAS.slice(0, count);
-    renderIdeaList(currentIdeas);
-    toast(`${currentIdeas.length} ideas generated for "${theme}"`);
-  }
-
-  function startIdeaRun(index, title) {
-    activeIdeaIndex = index;
-    renderIdeaList(currentIdeas);
-    toast(`▶ Running pipeline for: "${title.slice(0,40)}${title.length>40?'…':''}"`);
-    startIdeaPipeline(index, title);
-  }
-
-  function startIdeaPipeline(ideaIndex, title) {
-    // Kick off single post run
-    batchTotal = 1;
-    batchRemaining = 1;
-    isRunning = true;
-    agentStep = 0;
-    postSteps = [0];
-    postTimers = [];
-
-    // Fire real pipeline command with topic
-    callServer('/run-pipeline', 'POST', { posts: 1, topic: title }).then(res => {
-      if (!res) toast('⚠️ Could not reach local server — running in simulation mode.');
-    });
-
-    document.getElementById('runBtn').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'inline-flex';
-    document.getElementById('progressSection').style.display = 'block';
-    document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('progressBar').style.background = 'var(--yellow)';
-    document.getElementById('parallelTracker').style.display = 'none';
-    document.getElementById('aeoBadge').textContent = 'Running';
-    document.getElementById('aeoBadge').className = 'badge badge-running';
-    document.getElementById('globalDot').className = 'pulse-dot running';
-    document.getElementById('globalStatus').textContent = 'Pipeline Running';
-
-    // After Agent 1 (topic reservation), pull next from queue
-    const agent1Delay = 700 + Math.floor(Math.random() * 400);
-    setTimeout(() => {
-      if (isRunning && brainstormQueue.length > 0) {
-        processNextInQueue();
-      }
-    }, agent1Delay);
-
-    // When this post finishes, mark it done
-    const checkDone = setInterval(() => {
-      if (!isRunning) {
-        clearInterval(checkDone);
-        if (ideaIndex !== null) {
-          doneIdeaIndices.add(ideaIndex);
-          if (currentIdeas.length) renderIdeaList(currentIdeas);
-        }
-      }
-    }, 500);
-
-    schedulePostStep(0);
-  }
-
-  function processNextInQueue() {
-    if (!brainstormQueue.length) return;
-    const next = brainstormQueue.shift();
-    renderQueueList();
-    toast(`▶ Starting next in queue: "${next.title.slice(0,35)}…"`);
-    activeIdeaIndex = next.index;
-    renderIdeaList(currentIdeas);
-    startIdeaPipeline(next.index, next.title);
-  }
-
-  function addToQueue(index, title) {
-    if (brainstormQueue.some(q => q.index === index)) return;
-    brainstormQueue.push({ index, title });
-    renderIdeaList(currentIdeas);
-    renderQueueList();
-    toast(`Added to queue: "${title.slice(0,35)}${title.length>35?'…':''}"`);
-  }
-
-  function removeFromQueue(index) {
-    brainstormQueue = brainstormQueue.filter(q => q.index !== index);
-    renderIdeaList(currentIdeas);
-    renderQueueList();
-  }
-
-  function renderQueueList() {
-    const section = document.getElementById('queueSection');
-    const list    = document.getElementById('queueList');
-    const count   = document.getElementById('queueCount');
-    if (!brainstormQueue.length) {
-      section.style.display = 'none';
-      return;
     }
-    section.style.display = 'block';
-    count.textContent = brainstormQueue.length;
-    list.innerHTML = brainstormQueue.map((q, i) => `
-      <div class="queue-item">
-        <div class="queue-item-num">${i+1}</div>
-        <div class="queue-item-title">${q.title}</div>
-        <button class="queue-item-remove" onclick="removeFromQueue(${q.index})" title="Remove from queue">✕</button>
-      </div>`).join('');
   }
+}
 
-  function switchTab(id, btn) {
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+id).classList.add('active');
-    if (id==='run') renderAgents();
-  }
+function showRunBtn()  { document.getElementById('run-btn').style.display=''; document.getElementById('stop-btn').style.display='none'; }
+function showStopBtn() { document.getElementById('run-btn').style.display='none'; document.getElementById('stop-btn').style.display=''; }
+function showPipelineBar() { document.getElementById('pipeline-bar-card').style.display=''; }
+function hidePipelineBar() {
+  document.getElementById('pipeline-bar-card').style.display='none';
+  document.getElementById('pb-fill').style.width='0%';
+}
 
-  function openPanel() {
-    document.getElementById('overlay').classList.add('open');
-    renderAgents();
-  }
-
-  function overlayClick(e) { if (e.target===document.getElementById('overlay')) closePanel(); }
-
-  function closePanel() {
-    document.getElementById('overlay').classList.remove('open');
-  }
-
-  function nowStr() {
-    const n = new Date();
-    return n.toLocaleDateString([],{month:'short',day:'numeric'}) + ' ' + n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  }
-
-  function toast(msg) {
-    const el = document.getElementById('toastEl');
-    el.textContent = msg; el.classList.add('show');
-    setTimeout(()=>el.classList.remove('show'), 3200);
-  }
-
-  function triggerFreshness() {
-    toast('Sending freshness audit request…');
-    callServer('/run-freshness-audit', 'POST').then(res => {
-      if (res && res.status === 'started') {
-        toast('Freshness audit started — check Claude Code for progress.');
-      } else if (!res) {
-        toast('Could not reach local server — is the bridge running?');
-      }
+// ─────────────────────────────────────────────
+//  RUN / STOP
+// ─────────────────────────────────────────────
+async function triggerRun() {
+  const posts = parseInt(document.getElementById('batch-num').value) || 1;
+  try {
+    const r = await fetch(`${BRIDGE}/run`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ posts }),
+      signal: AbortSignal.timeout(4000),
     });
+    if (r.ok) { showStopBtn(); showPipelineBar(); showToast('Pipeline triggered'); }
+    else showToast('Bridge returned an error');
+  } catch {
+    showToast('Bridge offline — start bridge-server.js on your Mac first');
+  }
+}
+
+async function stopRun() {
+  try {
+    await fetch(`${BRIDGE}/stop`, { method:'POST', signal: AbortSignal.timeout(3000) });
+    showRunBtn(); hidePipelineBar(); resetAgents();
+    showToast('Stop signal sent');
+  } catch {
+    showToast('Could not reach bridge to stop');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  RUN LOG  — saved to Firebase
+// ─────────────────────────────────────────────
+async function recordRun(title, iso, wpLink) {
+  let log = (await fbGet('runlog')) || [];
+  log.unshift({ title, iso, wpLink: wpLink || null });
+  if (log.length > 40) log = log.slice(0, 40);
+  await fbSet('runlog', log);
+  renderLog(log);
+
+  // Update stats
+  let stats = (await fbGet('stats')) || { total: 0, weekEntries: [] };
+  stats.total = (stats.total || 0) + 1;
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  stats.weekEntries = (stats.weekEntries || []).filter(t => t > weekAgo);
+  stats.weekEntries.push(Date.now());
+  await fbSet('stats', stats);
+  applyStats(stats);
+}
+
+function renderLog(log) {
+  const ul = document.getElementById('run-log');
+  if (!log || log.length === 0) {
+    ul.innerHTML = '<li class="log-empty">No runs yet. Hit Run Pipeline Now to get started.</li>';
+    return;
+  }
+  ul.innerHTML = log.map(item => {
+    const d       = new Date(item.iso);
+    const dateStr = isNaN(d) ? '' : d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    const link    = item.wpLink ? `<a class="log-link" href="${item.wpLink}" target="_blank">View Draft</a>` : '';
+    return `<li class="log-item">
+      <span class="log-title">${escHtml(item.title || 'Draft')}</span>
+      <div class="log-right"><span class="log-date">${dateStr}</span>${link}</div>
+    </li>`;
+  }).join('');
+}
+
+function applyStats(stats) {
+  if (!stats) { document.getElementById('stat-week').textContent='0'; document.getElementById('stat-total').textContent='0'; return; }
+  const weekAgo = Date.now() - 7*24*60*60*1000;
+  const week    = (stats.weekEntries || []).filter(t => t > weekAgo).length;
+  document.getElementById('stat-week').textContent  = week;
+  document.getElementById('stat-total').textContent = stats.total || 0;
+}
+
+// ─────────────────────────────────────────────
+//  SCHEDULE  — saved to Firebase, persists across all HTML uploads
+// ─────────────────────────────────────────────
+async function saveSchedule() {
+  const btn   = document.getElementById('save-btn');
+  btn.disabled = true;
+
+  const days  = [...document.querySelectorAll('.day-toggle.on')].map(el => el.dataset.day);
+  const time  = document.getElementById('sched-time').value || '02:00';
+  const posts = parseInt(document.getElementById('sched-posts').value) || 1;
+  const schedule = { days, time, posts, savedAt: new Date().toISOString() };
+
+  const ok = await fbSet('schedule', schedule);
+
+  if (ok) {
+    const conf = document.getElementById('save-confirm');
+    conf.classList.add('show');
+    setTimeout(() => conf.classList.remove('show'), 2500);
+    updateScheduleSummary(schedule);
+    updateNextRunDisplay(schedule);
+    showToast('Schedule saved');
+
+    // Also push to bridge server if it happens to be online
+    try {
+      await fetch(`${BRIDGE}/schedule`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(schedule),
+        signal: AbortSignal.timeout(2500),
+      });
+    } catch { /* bridge offline is fine — Firebase is the source of truth */ }
+  } else {
+    showToast('Save failed — check your connection and try again');
   }
 
-  // ── AGENT TIMEOUT THRESHOLDS (minutes) ──
-  const AGENT_TIMEOUTS = [5, 15, 15, 5, 5, 20, 15, 5, 5]; // 1-indexed agents 1-9
-  let stuckTimer = null;
-  let currentAgentStartTime = null;
-  let lastKnownAgent = null;
+  btn.disabled = false;
+}
 
-  function startStuckWatcher(agentIndex) {
-    clearStuckWatcher();
-    const agentNum = agentIndex + 1; // convert to 1-indexed
-    const timeoutMins = AGENT_TIMEOUTS[agentIndex] || 10;
-    currentAgentStartTime = Date.now();
-    lastKnownAgent = agentIndex;
+function applyScheduleToUI(schedule) {
+  if (!schedule) return;
+  document.querySelectorAll('.day-toggle').forEach(el => {
+    el.classList.toggle('on', (schedule.days || []).includes(el.dataset.day));
+  });
+  if (schedule.time)  document.getElementById('sched-time').value  = schedule.time;
+  if (schedule.posts) document.getElementById('sched-posts').value = schedule.posts;
+  updateScheduleSummary(schedule);
+}
 
-    stuckTimer = setTimeout(() => {
-      // Still on same agent after timeout — show warning
-      if (isRunning && lastKnownAgent === agentIndex) {
-        const name = AGENTS[agentIndex]?.name || `Agent ${agentNum}`;
-        document.getElementById('stuckAgentName').textContent = name;
-        document.getElementById('stuckWarning').classList.add('show');
-      }
-    }, timeoutMins * 60 * 1000);
+function toggleDay(el) { el.classList.toggle('on'); }
+
+function updateScheduleSummary(schedule) {
+  const el = document.getElementById('sched-summary');
+  if (!schedule || !schedule.days || schedule.days.length === 0) {
+    el.innerHTML = 'No schedule set yet. Pick days and a time above, then hit Save Schedule.';
+    return;
   }
+  const names   = { sun:'Sunday', mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday' };
+  const dayList = schedule.days.map(d => names[d] || d).join(', ');
+  const [h, m]  = (schedule.time || '02:00').split(':').map(Number);
+  const ampm    = h >= 12 ? 'PM' : 'AM';
+  const h12     = ((h % 12) || 12) + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+  el.innerHTML  = `Runs every <strong>${dayList}</strong> at <strong>${h12}</strong> — <strong>${schedule.posts || 1} post${(schedule.posts||1)>1?'s':''}</strong> per run.`;
+}
 
-  function clearStuckWatcher() {
-    if (stuckTimer) { clearTimeout(stuckTimer); stuckTimer = null; }
-    document.getElementById('stuckWarning').classList.remove('show');
+function updateNextRunDisplay(schedule) {
+  const valEl = document.getElementById('stat-next');
+  const subEl = document.getElementById('stat-next-sub');
+  if (!schedule || !schedule.days || schedule.days.length === 0) {
+    valEl.textContent = '—'; subEl.textContent = 'No schedule set'; return;
   }
+  const dayMap  = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
+  const now     = new Date();
+  const [h, mi] = (schedule.time || '02:00').split(':').map(Number);
+  let earliest  = null;
 
-  function copyCmd(btn, text) {
-    navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-    });
+  schedule.days.forEach(d => {
+    const t    = new Date(now);
+    let diff   = dayMap[d] - now.getDay();
+    if (diff < 0) diff += 7;
+    t.setDate(t.getDate() + diff);
+    t.setHours(h, mi, 0, 0);
+    if (t <= now) t.setDate(t.getDate() + 7);
+    if (!earliest || t < earliest) earliest = t;
+  });
+
+  if (!earliest) { valEl.textContent='—'; subEl.textContent='No schedule set'; return; }
+  const diffDays = Math.floor((earliest - now) / 86400000);
+  valEl.textContent = earliest.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  subEl.textContent = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `In ${diffDays} days`;
+}
+
+// ─────────────────────────────────────────────
+//  QUEUE  — saved to Firebase
+// ─────────────────────────────────────────────
+async function addTopic() {
+  const inp   = document.getElementById('topic-input');
+  const topic = inp.value.trim();
+  if (!topic) return;
+  inp.value = '';
+
+  let queue = (await fbGet('queue')) || [];
+  queue.push(topic);
+  await fbSet('queue', queue);
+  renderQueue(queue);
+  document.getElementById('stat-queue').textContent = queue.length;
+  showToast('Topic added');
+}
+
+async function removeTopic(idx) {
+  let queue = (await fbGet('queue')) || [];
+  queue.splice(idx, 1);
+  await fbSet('queue', queue);
+  renderQueue(queue);
+  document.getElementById('stat-queue').textContent = queue.length;
+}
+
+function renderQueue(queue) {
+  const listEl  = document.getElementById('queue-list');
+  const emptyEl = document.getElementById('queue-empty');
+  document.getElementById('stat-queue').textContent = (queue || []).length;
+
+  if (!queue || queue.length === 0) {
+    emptyEl.style.display = ''; listEl.innerHTML = ''; return;
   }
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = queue.map((t, i) => `
+    <div class="queue-item">
+      <span class="queue-num">${i + 1}</span>
+      <span class="queue-topic">${escHtml(t)}</span>
+      <button class="queue-del" onclick="removeTopic(${i})" title="Remove">×</button>
+    </div>`).join('');
+}
 
-  // ── PASSIVE POLLER (picks up scheduled runs or runs started externally) ──
-  // Runs always in the background, every 5s, even when dashboard thinks it's idle.
-  // If it detects a live run, it kicks the dashboard into active mode automatically.
-  let passivePoller = null;
+// ─────────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  el.classList.add('active');
+}
 
-  function startPassivePoller() {
-    passivePoller = setInterval(async () => {
-      if (isRunning) return; // active poller already handling it
-      const status = await callServer('/status', 'GET');
-      if (!status) return;
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-      if ((status.phase === 'running') && status.currentAgent > 0) {
-        // A run is in progress that the dashboard doesn't know about — wake it up
-        batchTotal = 1;
-        batchRemaining = 1;
-        isRunning = true;
-        agentStep = 0;
-        postSteps = [status.currentAgent - 1];
-        postTimers = [];
+// ─────────────────────────────────────────────
+//  UTIL
+// ─────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-        document.getElementById('runBtn').style.display = 'none';
-        document.getElementById('stopBtn').style.display = 'inline-flex';
-        document.getElementById('progressSection').style.display = 'block';
-        document.getElementById('progressBar').style.width = '0%';
-        document.getElementById('progressBar').style.background = 'var(--yellow)';
-        document.getElementById('parallelTracker').style.display = 'none';
-        document.getElementById('aeoBadge').textContent = 'Running';
-        document.getElementById('aeoBadge').className = 'badge badge-running';
-        document.getElementById('globalDot').className = 'pulse-dot running';
-        document.getElementById('globalStatus').textContent = 'Pipeline Running';
+// ─────────────────────────────────────────────
+//  EXPOSE TO WINDOW  (required for inline onclick with ES modules)
+// ─────────────────────────────────────────────
+window.doLogin       = doLogin;
+window.doLogout      = doLogout;
+window.showTab       = showTab;
+window.toggleDay     = toggleDay;
+window.saveSchedule  = saveSchedule;
+window.triggerRun    = triggerRun;
+window.stopRun       = stopRun;
+window.addTopic      = addTopic;
+window.removeTopic   = removeTopic;
 
-        // Open the panel so Rebecca can see progress
-        openPanel();
-        toast('Pipeline is running — picked up live status.');
-
-        // Hand off to the active poller
-        startStatusPoller();
-      }
-    }, 5000);
-  }
-
-  renderAgents();
-  startPassivePoller();
-
-  // ── IMMEDIATE BOOT CHECK ──
-  // On page load, check status once right away so dashboard
-  // reflects reality instantly (don't wait 5s for first passive poll)
-  (async () => {
-    const status = await callServer('/status', 'GET');
-    if (!status) return;
-    if (status.phase === 'running' && status.currentAgent > 0) {
-      batchTotal = 1; batchRemaining = 1; isRunning = true;
-      agentStep = 0;
-      postSteps = [status.currentAgent - 1];
-      postTimers = [];
-      document.getElementById('runBtn').style.display = 'none';
-      document.getElementById('stopBtn').style.display = 'inline-flex';
-      document.getElementById('progressSection').style.display = 'block';
-      document.getElementById('progressBar').style.width = Math.round(((status.currentAgent-1)/9)*100) + '%';
-      document.getElementById('progressBar').style.background = 'var(--yellow)';
-      document.getElementById('parallelTracker').style.display = 'none';
-      document.getElementById('aeoBadge').textContent = 'Running';
-      document.getElementById('aeoBadge').className = 'badge badge-running';
-      document.getElementById('globalDot').className = 'pulse-dot running';
-      document.getElementById('globalStatus').textContent = 'Pipeline Running';
-      document.getElementById('progressLabel').textContent =
-        `Agent ${status.currentAgent} of 9: ${status.currentAgentName || ''}`;
-      renderAgents(status.currentAgent - 1);
-      startStatusPoller();
-    }
-  })();
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+const saved = getSavedEmail();
+if (saved) {
+  document.getElementById('login-screen').classList.add('gone');
+  bootApp(saved);
+}
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
 </script>
 </body>
 </html>
