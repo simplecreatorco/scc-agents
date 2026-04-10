@@ -1009,12 +1009,13 @@
     return result;
   }
 
-  // Kick off Firebase in the background — never blocks the rest of the script
-  initFirebase().then(ok => {
+  // Kick off Firebase in the background — store the promise so bootApp can wait on it
+  const firebaseReadyPromise = initFirebase().then(ok => {
     if (!ok) {
       showFbBanner('Could not connect — retrying automatically…');
       startFbRetry();
     }
+    return ok;
   });
 
 
@@ -1741,7 +1742,8 @@
     // Render agents right away so the dashboard is live
     renderAgents();
 
-    // Load Firebase data in the background — won't block the dashboard
+    // Wait for Firebase to finish connecting, THEN load persisted data
+    await firebaseReadyPromise;
     loadPersistedData().catch(e => console.warn('loadPersistedData error:', e));
   }
 
